@@ -1,0 +1,254 @@
+{
+  "code": 0,
+  "msg": "",
+  "count": 19,
+  "data": [
+    {
+      "id": 1,
+      "title": "系统1管理",
+      "sort": 1,
+      "href": null,
+      "menuIcon": "layui-icon-set",
+      
+      "permissions": null,
+      
+
+      "type": 0,
+      "parent_id": -1
+    },
+    {
+      "id": 2,
+      "title": "用户管理",
+      "sort": 2,
+      "href": "system/user",
+      "menuIcon": null,
+      
+      "permissions": null,
+      
+
+      "type": 0,
+      "parent_id": 1
+    },
+    {
+      "id": 3,
+      "title": "查询用户",
+      "sort": 3,
+      "href": "",
+      "menuIcon": "",
+      "createTime": "2018/07/21 13:54:16",
+      "permissions": "user:view",
+      
+      "updateTime": "2018/07/21 13:54:16",
+      "type": 1,
+      "parent_id": 2
+    },
+    {
+      "id": 4,
+      "title": "添加用户",
+      "sort": 4,
+      "href": null,
+      "menuIcon": null,
+      
+      "permissions": "user:add",
+      
+
+      "type": 1,
+      "parent_id": 2
+    },
+    {
+      "id": 5,
+      "title": "修改用户",
+      "sort": 5,
+      "href": null,
+      "menuIcon": null,
+      
+      "permissions": "user:edit",
+      
+
+      "type": 1,
+      "parent_id": 2
+    },
+    {
+      "id": 6,
+      "title": "删除用户",
+      "sort": 6,
+      "href": null,
+      "menuIcon": null,
+      
+      "permissions": "user:delete",
+      
+
+      "type": 1,
+      "parent_id": 2
+    },
+    {
+      "id": 7,
+      "title": "角色管理",
+      "sort": 7,
+      "href": "system/role",
+      "menuIcon": null,
+      
+      "permissions": null,
+      
+
+      "type": 0,
+      "parent_id": 1
+    },
+    {
+      "id": 8,
+      "title": "查询角色",
+      "sort": 8,
+      "href": "",
+      "menuIcon": "",
+      "createTime": "2018/07/21 13:54:59",
+      "permissions": "role:view",
+      
+      "updateTime": "2018/07/21 13:54:58",
+      "type": 1,
+      "parent_id": 7
+    },
+    {
+      "id": 9,
+      "title": "添加角色",
+      "sort": 9,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "role:add",
+      
+
+      "type": 1,
+      "parent_id": 7
+    },
+    {
+      "id": 10,
+      "title": "修改角色",
+      "sort": 10,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "role:edit",
+      
+
+      "type": 1,
+      "parent_id": 7
+    },
+    {
+      "id": 11,
+      "title": "删除角色",
+      "sort": 11,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "role:delete",
+      
+
+      "type": 1,
+      "parent_id": 7
+    },
+    {
+      "id": 12,
+      "title": "角色权限管理",
+      "sort": 12,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "role:auth",
+      
+      "updateTime": "2018/07/13 15:27:18",
+      "type": 1,
+      "parent_id": 7
+    },
+    {
+      "id": 13,
+      "title": "权限管理",
+      "sort": 13,
+      "href": "system/authorities",
+      "menuIcon": null,
+      
+      "permissions": null,
+      
+      "updateTime": "2018/07/13 15:45:13",
+      "type": 0,
+      "parent_id": 1
+    },
+    {
+      "id": 14,
+      "title": "查询权限",
+      "sort": 14,
+      "href": "",
+      "menuIcon": "",
+      "createTime": "2018/07/21 13:55:57",
+      "permissions": "authorities:view",
+      
+      "updateTime": "2018/07/21 13:55:56",
+      "type": 1,
+      "parent_id": 13
+    },
+    {
+      "id": 15,
+      "title": "添加权限",
+      "sort": 15,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "authorities:add",
+      
+      "updateTime": "2018/06/29 11:05:41",
+      "type": 1,
+      "parent_id": 13
+    },
+    {
+      "id": 16,
+      "title": "修改权限",
+      "sort": 16,
+      "href": "",
+      "menuIcon": "",
+      "createTime": "2018/07/13 09:13:42",
+      "permissions": "authorities:edit",
+      
+
+      "type": 1,
+      "parent_id": 13
+    },
+    {
+      "id": 17,
+      "title": "删除权限",
+      "sort": 17,
+      "href": "",
+      "menuIcon": "",
+      
+      "permissions": "authorities:delete",
+      
+      "updateTime": "2018/06/29 11:05:41",
+      "type": 1,
+      "parent_id": 13
+    },
+    {
+      "id": 18,
+      "title": "登录日志",
+      "sort": 18,
+      "href": "system/loginRecord",
+      "menuIcon": null,
+      
+      "permissions": null,
+      
+      "updateTime": "2018/06/29 11:05:41",
+      "type": 0,
+      "parent_id": 1
+    },
+    {
+      "id": 19,
+      "title": "查询登录日志",
+      "sort": 19,
+      "href": "",
+      "menuIcon": "",
+      "createTime": "2018/07/21 13:56:43",
+      "permissions": "loginRecord:view",
+      
+      "updateTime": "2018/07/21 13:56:43",
+      "type": 1,
+      "parent_id": 18
+    }
+  ]
+}
