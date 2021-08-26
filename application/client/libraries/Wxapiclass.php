@@ -140,17 +140,17 @@ class Wxapiclass
         return $result;
     }
 
+    /**
+     * 文件存储access_token
+     */
     private function get_wx_access_token()
     {
-        $access_token = '';
-        if (isset($_SESSION['wx_access_token'])){
-            if ($_SESSION['wx_access_token']['expires'] > time()){
-                $access_token = $_SESSION['wx_access_token']['data'];
-            }else{
-                unset($_SESSION['wx_access_token']);
-            }
-        }
-        if (!$access_token){
+        $this->CI->load->driver('cache');
+        $cache = $this->CI->cache->file->get_metadata('wx_token');
+        if ($cache && $cache['expire'] > time()) {
+            $access_token = $this->CI->cache->file->get('wx_token');
+        } else {
+            $access_token = '';
             $appid = $this->_appid;
             $appSecret = $this->_appSecret;
             $json = http_curl("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={$appid}&secret={$appSecret}");
@@ -158,11 +158,7 @@ class Wxapiclass
             if (!isset($obj->errmsg)) {
                 $access_token = $obj->access_token;
                 $expires_in = $obj->expires_in;
-                $session_data = array(
-                    'data'=>$access_token,
-                    'expires'=>time()+$expires_in-60,
-                );
-                $_SESSION['wx_access_token'] = $session_data;
+                $this->CI->cache->file->save('wx_token', $access_token, $expires_in-60);
             }
         }
 

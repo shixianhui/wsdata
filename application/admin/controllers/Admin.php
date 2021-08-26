@@ -26,7 +26,6 @@ class Admin extends CI_Controller {
 
         $strWhere = NULL;
         $strWhere = $this->session->userdata($this->_template.'_search')?$this->session->userdata($this->_template.'_search'):$strWhere;
-
 		if ($_POST) {
 			$strWhere = "{$this->_table}.id > 0";
 		    $username = $this->input->post('username', TRUE);
@@ -50,7 +49,7 @@ class Admin extends CI_Controller {
     	$paginationConfig['base_url'] = base_url()."admincp.php/{$this->_template}/index/{$refresh}/";
     	$paginationConfig['total_rows'] = $paginationCount;
     	$paginationConfig['uri_segment'] = 4;
-    	$paginationConfig['per_page'] = 5;
+    	// $paginationConfig['per_page'] = 5;
 		$this->pagination->initialize($paginationConfig);
 		$pagination = $this->pagination->create_links();
 

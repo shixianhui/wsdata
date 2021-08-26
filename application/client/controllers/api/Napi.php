@@ -6,6 +6,8 @@ class Napi extends CI_Controller
     // private $appSecret = '2441e631e721375a89127ac0b3888c60';
     private $appid = 'wxf3079356aedb39a8';
     private $appSecret = '093decdce3971440e0bd71ba04330306';
+    private $byteAppId = 'tt18da6e6787e2d65c01';
+    private $byteAppSecret = '9e20a6cf3dddeecc0d4721ab6f7f5f9b87405985';
     private $_business_status_arr = ['暂未营业','正在营业','休息中'];
     private $_orders_status_arr = [
         '0' => '待付款',
@@ -494,121 +496,277 @@ class Napi extends CI_Controller
 
     }
 
-        //小程序绑定手机号
-        public function bind_mobile()
-        {
-            if ($_POST){
-                $code = $this->input->post("code", true);
-                $iv = $this->input->post('iv', TRUE);
-                $encryptedData = $this->input->post('encryptedData', TRUE);
-                $user_id = $this->input->post('user_id', TRUE);
+    //小程序绑定手机号
+    public function bind_mobile()
+    {
+        if ($_POST){
+            $code = $this->input->post("code", true);
+            $iv = $this->input->post('iv', TRUE);
+            $encryptedData = $this->input->post('encryptedData', TRUE);
+            $user_id = $this->input->post('user_id', TRUE);
 
-                $this->load->model('User_model', '', TRUE);
-                $user_info = $this->User_model->get('*', ['id'=>$user_id]);
-                if (!$user_info) {
-                    printAjaxError('fail', '参数异常');
-                }
-    
-                $appid = $this->appid;
-                $appSecret = $this->appSecret;
-                $json = file_get_contents("https://api.weixin.qq.com/sns/jscode2session?appid={$appid}&secret={$appSecret}&js_code={$code}&grant_type=authorization_code");
-                $obj = json_decode($json);
-                if (isset($obj->errmsg)) {
-                    printAjaxError('fail', 'invalid code!');
-                }
-                $session_key = $obj->session_key;
-                $param = array('appid'=>$this->appid,'sessionKey'=>$session_key);
-                $this->load->library('WXBizDataCrypt/WXBizDataCrypt',$param);
-                $pc = new WXBizDataCrypt($param);
-                $data = [];
-                $errCode = $pc->decryptData($encryptedData, $iv, $data);
-    
-                if ($errCode != 0) {
-                    printAjaxError('fail',$errCode);
-                }
-    
-                $get_phone_info = json_decode($data);
-                $mobile = $get_phone_info->purePhoneNumber;
-
-                $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
-                if ($mobile_user_info){
-                    $user_id = $mobile_user_info['id'];
-                    $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
-                    if ($result) {
-                        $this->User_model->delete(['id'=>$user_info['id']]);
-                    }
-                } else {
-                    $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
-                    //新用户奖励等
-                    $this->reg_reward($user_id, $user_info['parent_id']);
-                }
-                if ($result) {
-
-                    $session_id = session_id();
-                    $this->_set_session($user_id);
-                    printAjaxData($this->_tmp_user_info($user_id, $session_id, 1));
-                } else {
-                    printAjaxError('fail', '绑定手机号失败');
-                }
-            }
-        }
-    
-        /**
-         * 注册-绑定手机号
-         */
-        public function app_bind_mobile() {
             $this->load->model('User_model', '', TRUE);
-            $this->load->model('Sms_model', '', TRUE);
-    
-            if ($_POST) {
-                $mobile = $this->input->post('mobile', TRUE);
-                $smscode = $this->input->post('smscode', TRUE);
-                $user_id = $this->input->post('user_id', TRUE);
-                $user_info = $this->User_model->get('*', ['id'=>$user_id]);
-                if (!$user_info) {
-                    printAjaxError('fail', '参数异常');
-                }
-                if (!$this->form_validation->required($mobile)) {
-                    printAjaxError('username', '请输入手机号');
-                }
-                if (!$this->form_validation->valid_mobile($mobile)) {
-                    printAjaxError('username', '请输入正确的手机号');
-                }
-                if (!$this->form_validation->required($smscode)) {
-                    printAjaxError('smscode', '请输入短信验证码');
-                }
-                $timestamp = time() - 5*60;
-                if (!$this->Sms_model->get('id', "smscode = '{$smscode}' and mobile = '{$mobile}' and add_time > {$timestamp}")) {
-                    printAjaxError('smscode', '短信验证码错误或者已过期');
-                }
-    
-                $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
-                if ($mobile_user_info){
-                    $user_id = $mobile_user_info['id'];
-                    $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
-                    if ($result) {
-                        $this->User_model->delete(['id'=>$user_info['id']]);
-                    }
-                } else {
-                    $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
-                    //新用户奖励等
-                    $this->reg_reward($user_id, $user_info['parent_id']);
-                }
-                if (!$result){
-                    printAjaxError('fail','注册失败');
-                }
+            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            if (!$user_info) {
+                printAjaxError('fail', '参数异常');
+            }
 
-                
-    
+            $appid = $this->appid;
+            $appSecret = $this->appSecret;
+            $json = file_get_contents("https://api.weixin.qq.com/sns/jscode2session?appid={$appid}&secret={$appSecret}&js_code={$code}&grant_type=authorization_code");
+            $obj = json_decode($json);
+            if (isset($obj->errmsg)) {
+                printAjaxError('fail', 'invalid code!');
+            }
+            $session_key = $obj->session_key;
+            $param = array('appid'=>$this->appid,'sessionKey'=>$session_key);
+            $this->load->library('WXBizDataCrypt/WXBizDataCrypt',$param);
+            $pc = new WXBizDataCrypt($param);
+            $data = '';
+            $errCode = $pc->decryptData($encryptedData, $iv, $data);
+
+            if ($errCode != 0) {
+                printAjaxError('fail',$errCode);
+            }
+
+            $get_phone_info = json_decode($data);
+            $mobile = $get_phone_info->purePhoneNumber;
+
+            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            if ($mobile_user_info){
+                $user_id = $mobile_user_info['id'];
+                $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                if ($result) {
+                    $this->User_model->delete(['id'=>$user_info['id']]);
+                }
+            } else {
+                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                //新用户奖励等
+                $this->reg_reward($user_id, $user_info['parent_id']);
+            }
+            if ($result) {
+
                 $session_id = session_id();
                 $this->_set_session($user_id);
                 printAjaxData($this->_tmp_user_info($user_id, $session_id, 1));
-    
+            } else {
+                printAjaxError('fail', '绑定手机号失败');
             }
-    
-            printAjaxError('fail','登录失败');
+        }
+    }
+
+    /**
+     * 注册-绑定手机号
+     */
+    public function app_bind_mobile() {
+        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Sms_model', '', TRUE);
+
+        if ($_POST) {
+            $mobile = $this->input->post('mobile', TRUE);
+            $smscode = $this->input->post('smscode', TRUE);
+            $user_id = $this->input->post('user_id', TRUE);
+            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            if (!$user_info) {
+                printAjaxError('fail', '参数异常');
+            }
+            if (!$this->form_validation->required($mobile)) {
+                printAjaxError('username', '请输入手机号');
+            }
+            if (!$this->form_validation->valid_mobile($mobile)) {
+                printAjaxError('username', '请输入正确的手机号');
+            }
+            if (!$this->form_validation->required($smscode)) {
+                printAjaxError('smscode', '请输入短信验证码');
+            }
+            $timestamp = time() - 5*60;
+            if (!$this->Sms_model->get('id', "smscode = '{$smscode}' and mobile = '{$mobile}' and add_time > {$timestamp}")) {
+                printAjaxError('smscode', '短信验证码错误或者已过期');
+            }
+
+            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            if ($mobile_user_info){
+                $user_id = $mobile_user_info['id'];
+                $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                if ($result) {
+                    $this->User_model->delete(['id'=>$user_info['id']]);
+                }
+            } else {
+                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                //新用户奖励等
+                $this->reg_reward($user_id, $user_info['parent_id']);
+            }
+            if (!$result){
+                printAjaxError('fail','注册失败');
+            }
+
+            
+
+            $session_id = session_id();
+            $this->_set_session($user_id);
+            printAjaxData($this->_tmp_user_info($user_id, $session_id, 1));
+
         }
 
+        printAjaxError('fail','登录失败');
+    }
+
+    /**
+     * 字节跳动小程序登录
+     */
+    public function byte_login()
+    {
+        $this->load->model('User_model', '', TRUE);
+        if ($_POST) {
+            $code = $this->input->post("code", true);
+            $iv = $this->input->post('iv', TRUE);
+            $encryptedData = $this->input->post('encryptedData', TRUE);
+            $parent_id = $this->input->post('parent_id', TRUE);
+
+            if (!$code) {
+                printAjaxError('fail', 'DO NOT ACCESS!');
+            }
+
+            $appid = $this->byteAppId;
+            $appSecret = $this->byteAppSecret;
+            $json = http_curl("https://developer.toutiao.com/api/apps/jscode2session?appid={$appid}&secret={$appSecret}&code={$code}");
+            $obj = json_decode($json);
+            if ($obj->error != 0) {
+                printAjaxError('fail', '登录错误！');
+            }
+            if (empty($obj->unionid)) {
+                printAjaxError('fail', '登录异常！');
+            }
+
+            $session_key = $obj->session_key;
+            $openid = $obj->openid;
+            
+            $param = array('appid' => $appid, 'sessionKey' => $session_key);
+            $this->load->library('WXBizDataCrypt/WXBizDataCrypt', $param);
+            $pc = new WXBizDataCrypt($param);
+            $errCode = $pc->decryptData($encryptedData, $iv, $data);
+
+            if ($errCode != 0) {
+                printAjaxError('fail', $errCode);
+            }
+
+            $get_user_info = json_decode($data);
+
+            $user_info = $this->User_model->get('*', array('byte_unionid' => $obj->unionid, 'display <>'=>3));
+
+            //已绑定用户直接登录
+            if ($user_info) {
+                if ($user_info['display'] == 2) {
+                    printAjaxError('fail', '你的账户被冻结，请联系客服');
+                }
+
+                $fields = array(
+                    'login_time' => time(),
+                );
+                if (!$user_info['byte_openid']) {
+                    $fields['byte_openid'] = $obj->openid;
+                }
+                $this->User_model->save($fields, array('id' => $user_info['id']));
+
+                $session_id = 0;
+                if ($user_info['display'] == 1) {
+                    $session_id = session_id();
+                    $this->_set_session($user_info['id']);
+                }
+                
+                printAjaxData($this->_tmp_user_info($user_info['id'], $session_id));
+            } else {
+                $addTime = time();
+                $fields = array(
+                    'username' => '',
+                    'password' => '',
+                    'mobile' => '',
+                    'nickname' => $get_user_info->nickName,
+                    'path' => $get_user_info->avatarUrl,
+                    'sex' => $get_user_info->gender,
+                    'login_time' => $addTime,
+                    'add_time' => $addTime,
+                    'byte_unionid' => $obj->unionid,
+                    'byte_openid' => $obj->openid,
+                    'display' => 0
+                );
+                if ($parent_id) {
+                    $fields['parent_id'] = $parent_id;
+                }
+
+                $ret_id = $this->User_model->save($fields);
+                if (!$ret_id) {
+                    printAjaxError('fail', '登录失败');
+                }
+                
+                $session_id = 0;
+                // $session_id = session_id();
+                // $this->_set_session($ret_id);
+                printAjaxData($this->_tmp_user_info($ret_id, $session_id));
+            }
+
+        }
+
+    }
+
+    //字节小程序绑定手机号
+    public function byte_bind_mobile()
+    {
+        if ($_POST){
+            $code = $this->input->post("code", true);
+            $iv = $this->input->post('iv', TRUE);
+            $encryptedData = $this->input->post('encryptedData', TRUE);
+            $user_id = $this->input->post('user_id', TRUE);
+
+            $this->load->model('User_model', '', TRUE);
+            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            if (!$user_info) {
+                printAjaxError('fail', '参数异常');
+            }
+
+            $appid = $this->byteAppId;
+            $appSecret = $this->byteAppSecret;
+            $json = http_curl("https://developer.toutiao.com/api/apps/jscode2session?appid={$appid}&secret={$appSecret}&code={$code}");
+            $obj = json_decode($json);
+            if ($obj->error != 0) {
+                printAjaxError('fail', 'invalid code!');
+            }
+            $session_key = $obj->session_key;
+            $param = array('appid'=>$appid,'sessionKey'=>$session_key);
+            $this->load->library('WXBizDataCrypt/WXBizDataCrypt',$param);
+            $pc = new WXBizDataCrypt($param);
+            $data = '';
+            $errCode = $pc->decryptData($encryptedData, $iv, $data);
+
+            if ($errCode != 0) {
+                printAjaxError('fail',$errCode);
+            }
+
+            $get_phone_info = json_decode($data);
+            $mobile = $get_phone_info->purePhoneNumber;
+
+            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            if ($mobile_user_info){
+                $user_id = $mobile_user_info['id'];
+                $result = $this->User_model->save(array('byte_unionid' => $user_info['byte_unionid'],'byte_openid'=>$user_info['byte_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                if ($result) {
+                    $this->User_model->delete(['id'=>$user_info['id']]);
+                }
+            } else {
+                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                //新用户奖励等
+                $this->reg_reward($user_id, $user_info['parent_id']);
+            }
+            if ($result) {
+
+                $session_id = session_id();
+                $this->_set_session($user_id);
+                printAjaxData($this->_tmp_user_info($user_id, $session_id, 1));
+            } else {
+                printAjaxError('fail', '绑定手机号失败');
+            }
+        }
+    }
 
     /**
      * 短信验证码校验
@@ -1242,6 +1400,7 @@ class Napi extends CI_Controller
                 }
                 $item_info['product_info'] = $product_info;
             } else {
+                $item_info['cover_image'] = filter_image_path($item_info['cover_image'])['path_thumb'];
                 $this->load->model('Attachment_model', '', TRUE);
                 $attachment_list = [];
                 if ($item_info['image_ids']) {
@@ -1279,6 +1438,11 @@ class Napi extends CI_Controller
                     $item_info['location'] = $location;
                 }
             }
+
+            $item_info['sales'] = $item_info['custom_sales'] ?: $item_info['sales'];
+            $this->load->model('Witticisms_model', '', TRUE);
+            $witticism_info = $this->Witticisms_model->gets('title', ['display'=>1], 1, 0, 'id', 'RANDOM');
+            $item_info['share_title'] = $witticism_info ? $witticism_info[0]['title'].' '.$item_info['name'] : $item_info['name'];
             
         }
         printAjaxData(['item_info'=>$item_info]);
@@ -1884,7 +2048,7 @@ class Napi extends CI_Controller
             $this->load->model('Orders_model', '', TRUE);
             $order_number = $post_data['biz_content']['SourceOrderNo'];
             $status = $post_data['biz_content']['CodeState'];
-            $order_info = $this->Orders_model->get('id,status', ['order_number'=>$order_number]);
+            $order_info = $this->Orders_model->get('id,status,store_id,user_id', ['order_number'=>$order_number]);
             if ($order_info) {
                 if ($this->Orders_model->save(['status'=>$status == 1 ? 2 : 10], ['id'=>$order_info['id']])) {
                     //订单跟踪记录
@@ -1896,13 +2060,41 @@ class Napi extends CI_Controller
                         'change_status' => $status == 1 ? 2 : 9
                     );
                     $this->Orders_process_model->save($orders_process_data);
+
+                    if ($status == 1) {
+                        //推广返佣
+                        $this->load->model('Orders_detail_model', '', TRUE);
+                        $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$order_info['id']]);
+                        if ($order_detail_info['item_type'] == 1) {
+                            $this->load->model('User_model', '', TRUE);
+                            $parent_info = $this->User_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
+                            if ($parent_info) {
+                                $balance = $parent_info['total'] + $order_detail_info['reward'];
+                                $data = [
+                                    'user_id' => $parent_info['id'],
+                                    'price' => $order_detail_info['reward'],
+                                    'balance' => $balance,
+                                    'store_id' => $order_info['store_id'],
+                                    'type' => 'order_reward',
+                                    'ret_id' => $order_info['id'],
+                                    'from_user_id' => $order_info['user_id'],
+                                    'cause' => '吆喝推广佣金'
+                                ];
+                                $this->load->model('Financial_model', '', TRUE);
+                                if ($this->Financial_model->save($data)) {
+                                    $this->User_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
+                                }
+                            }
+                        }
+                    }
+
                     echo "Success";
                 }
             }  
         }
     }
 
-    public function order_xcx_wx_pay($order_id = NULL, $type = 0)
+    public function order_xcx_wx_pay2($order_id = NULL, $type = 0)
     {
         $user_info = $this->_check_login();
         $this->load->model('Orders_model', '', TRUE);
@@ -1979,7 +2171,6 @@ class Napi extends CI_Controller
                 $this->Pay_log_model->save($fields);
             }
 
-
         } else {
             if (array_key_exists('result_code', $result) && $result['result_code'] == "FAIL") {
                 //商户号重复时，要重新生成
@@ -2031,6 +2222,139 @@ class Napi extends CI_Controller
         }
 
         $jsApiParameters = json_decode($jsApiParameters, true);
+
+        printAjaxData($jsApiParameters);
+
+    }
+
+    public function order_xcx_wx_pay($order_id = NULL, $type = 0)
+    {
+        $user_info = $this->_check_login();
+        $this->load->model('Orders_model', '', TRUE);
+        $this->load->model('Orders_detail_model', '', TRUE);
+        $this->load->model('Orders_form_model', '', TRUE);
+        $this->load->model('Pay_log_model', '', TRUE);
+
+        if (!$order_id) {
+            printAjaxError('fail','操作异常');
+        }
+        $code = $this->input->post("code", true);
+        if (!$code) {
+            printAjaxError('fail', 'DO NOT ACCESS!');
+        }
+        $appid = $this->appid;
+        $appSecret = $this->appSecret;
+        $json = file_get_contents("https://api.weixin.qq.com/sns/jscode2session?appid={$appid}&secret={$appSecret}&js_code={$code}&grant_type=authorization_code");
+        $obj = json_decode($json);
+        if (isset($obj->errmsg)) {
+            printAjaxError('fail', 'invalid code!');
+        }
+        $openid = $obj->openid;
+
+
+        if ($type){
+            $item_info = $this->Orders_form_model->get('order_ids,total,order_number,create_time',array('id'=>$order_id));
+            $out_trade_no = $item_info['order_number'];
+            $order_detail_list = [];
+            foreach (explode(',', $item_info['order_ids']) as $order_id) {
+                $order_detail = $this->Orders_detail_model->gets('*', ['order_id'=>$order_id]);
+                $order_detail_list = array_merge($order_detail_list, $order_detail);
+            }
+            $item_info['order_detail_list'] = $order_detail_list;
+            $item_info['type'] = $type;
+        }else{
+            $item_info = $this->Orders_model->get('*', "id = {$order_id} and user_id = {$user_info['id']} and status = 0");
+            $out_trade_no = $item_info['out_trade_no'] ? $item_info['out_trade_no'] : $item_info['order_number'];
+            $order_detail_list = $this->Orders_detail_model->gets('*', ['order_id'=>$order_id]);
+            $item_info['order_detail_list'] = $order_detail_list;
+            $item_info['type'] = $type;
+        }
+        if (!$item_info) {
+            printAjaxError('fail','订单信息不存在');
+        }
+
+        if ($item_info['total'] <= 0) {
+            printAjaxError('fail','支付金额异常');
+        }
+
+        /********************微信支付**********************/
+        require_once "sdk/weixin_pay/lib/WxPay.Api.php";
+        require_once "sdk/weixin_pay/WxPay.JsApiPay.php";
+
+
+        $tools = new JsApiPay();
+        $input = new WxPayUnifiedOrder();
+        $input->SetAppid($appid);
+        $input->SetOpenid($openid);
+        $input->SetBody("凑活小程序付款");
+        $input->SetAttach("{$order_id}");
+        $input->SetTotal_fee($item_info['total'] * 100);
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        $input->SetNotify_url(base_url() . "index.php/api/napi/order_xcx_wx_pay_notify");
+        $input->SetTrade_type("JSAPI");
+        $input->SetProduct_id($order_id);
+        $input->SetOut_trade_no($out_trade_no);
+        $result = WxPayApi::unifiedOrder($input,6,1);
+        $jsApiParameters = array();
+        if ($result['return_code'] != 'SUCCESS' || $result['result_code'] != 'SUCCESS') {
+            if (!array_key_exists('result_code', $result) || $result['result_code'] != "FAIL") {
+                printAjaxError('fail', '交易失败，请重试');
+            }
+            if (!($result['err_code'] == 'OUT_TRADE_NO_USED' || $result['err_code'] == 'INVALID_REQUEST') || $type != 0) {
+                printAjaxError('fail', $result['err_code']);
+            }
+            //商户号重复时，要重新生成
+            $out_trade_no = $this->_get_unique_out_trade_no();
+            $this->Orders_model->save(array('out_trade_no' => $out_trade_no), array('id' => $item_info['id']));
+
+            $input->SetAppid($appid);
+            $input->SetOpenid($openid);
+            $input->SetBody("凑活小程序付款");
+            $input->SetAttach("{$order_id}");
+            $input->SetTotal_fee($item_info['total'] * 100);
+            $input->SetTime_start(date("YmdHis"));
+            $input->SetTime_expire(date("YmdHis", time() + 600));
+            $input->SetNotify_url(base_url() . "index.php/api/napi/order_xcx_wx_pay_notify");
+            $input->SetTrade_type("JSAPI");
+            $input->SetProduct_id($order_id);
+            $input->SetOut_trade_no($out_trade_no);
+            $result = WxPayApi::unifiedOrder($input,6,1);
+            $jsApiParameters = array();
+            if ($result['return_code'] != 'SUCCESS' || $result['result_code'] != 'SUCCESS') {
+                printAjaxError('fail', $result['err_code']);
+            }
+
+        }
+
+        $jsApiParameters = $tools->GetJsApiParameters($result);
+        //生成支付记录
+        if (!$this->Pay_log_model->count(array('out_trade_no' => $out_trade_no, 'payment_type' => 0, 'order_type' => 0))) {
+            $fields = array(
+                'user_id' => $user_info['id'],
+                'total_fee' => $item_info['total'],
+                'out_trade_no' => $out_trade_no,
+                'order_number' => $item_info['order_number'],
+                'trade_status' => 'WAIT_BUYER_PAY',
+                'add_time' => time(),
+                'payment_type' => 0,
+                'order_type' => 0,
+                'form_type' => $type
+            );
+            $this->Pay_log_model->save($fields);
+        }
+
+        $jsApiParameters = json_decode($jsApiParameters, true);
+
+        //自定义交易组件生成订单
+        $order_info = $item_info;
+        $this->load->library('wxapiclass');
+        $order_info['openid'] = $openid;
+        $order_info['prepay_id'] = $result['prepay_id'];
+        $order_info['prepay_time'] = time();
+        $return_order_info = $this->wxapiclass->add_order($order_info);
+        $jsApiParameters['order_info'] = $return_order_info;
+
         printAjaxData($jsApiParameters);
 
     }
@@ -2042,7 +2366,8 @@ class Napi extends CI_Controller
         $msg = '支付通知失败';
         $appid = $this->appid;
         $appSecret = $this->appSecret;
-        $xml = $GLOBALS['HTTP_RAW_POST_DATA'];
+        // $xml = $GLOBALS['HTTP_RAW_POST_DATA'];
+        $xml = file_get_contents('php://input');
         try {
             $data = WxPayResults::Init($xml);
             if (array_key_exists("transaction_id", $data)) {
@@ -2071,6 +2396,13 @@ class Napi extends CI_Controller
                     $notify_time = $result['time_end'];
                     $total_fee = $result['total_fee'];
 
+                    $params = [
+                        'id' => $out_trade_no,
+                        'user_openid' => $result['openid'],
+                        'action_type' => 1,
+                        'transaction_id' => $trade_no,
+                        'pay_time' => date('Y-m-d H:i:s', strtotime($notify_time))
+                    ];
                     $pay_log_info = $this->Pay_log_model->get('*', array('out_trade_no' => $out_trade_no, 'order_type' => 0, 'payment_type' => 0));
                     if ($pay_log_info && $total_fee == $pay_log_info['total_fee'] * 100) {
                         if ($pay_log_info['trade_status'] != 'TRADE_FINISHED' && $pay_log_info['trade_status'] != 'TRADE_SUCCESS' && $pay_log_info['trade_status'] != 'TRADE_CLOSED') {
@@ -2087,6 +2419,23 @@ class Napi extends CI_Controller
                                 } else {
                                     $order_id_arr = [$order_id];
                                 }
+                                //交易组件同步订单
+                                // $params = [
+                                //     'id' => $out_trade_no,
+                                //     'openid' => $result['openid'],
+                                //     'action_type' => 1,
+                                //     'transaction_id' => $trade_no,
+                                //     'pay_time' => date('Y-m-d H:i:s', strtotime($notify_time))
+                                // ];
+                                // $this->load->library('wxapiclass');
+                                // $this->wxapiclass->sync_order_pay($params);
+                                // $params = [
+                                //     'order_number' => $out_trade_no,
+                                //     'openid' => $result['openid'],
+                                // ];
+                                // $this->wxapiclass->delivery_send($params);
+                                // $this->wxapiclass->delivery_recieve($params);
+
                                 $user_info = $this->User_model->get('id, total, username, nickname, mobile', array('id' => $pay_log_info['user_id']));
                                 if ($order_id_arr && $user_info) {
                                     $this->load->model('Orders_detail_model', '', TRUE);
@@ -2111,18 +2460,32 @@ class Napi extends CI_Controller
                                                 $this->Orders_process_model->save($fields);
                                                 $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$item_info['id']]);
                                                 if ($order_detail_info) {
-                                                    if ($order_detail_info['item_type'] == 0) {
-                                                        $this->Combos_model->save_column('sales', "sales+{$order_detail_info['buy_number']}", ['id'=>$order_detail_info['item_id']]);
+                                                    //加销量
+                                                    if ($order_detail_info['item_type'] == 1) {
+                                                        $this->load->model('Share_goods_model', '', TRUE);
+                                                        $share_goods_info = $this->Share_goods_model->get('goods_id', ['id'=>$order_detail_info['item_id']]);
+                                                        $combos_info = $this->Combos_model->get('id,product_id,sales,custom_sales', ['id'=>$share_goods_info['goods_id']]);
+                                                        if ($combos_info) {
+                                                            $columns['sales'] = $combos_info['sales'] + $order_detail_info['buy_number'];
+                                                            if ($combos_info['custom_sales']) {
+                                                                $columns['custom_sales'] = $combos_info['custom_sales'] + $order_detail_info['buy_number'];
+                                                            }
+                                                            $this->Combos_model->save($columns, ['id'=>$combos_info['id']]);
+                                                        }
+                                                    } else {
+                                                        $combos_info = $this->Combos_model->get('id,product_id,sales,custom_sales', ['id'=>$order_detail_info['item_id']]);
+                                                        if ($combos_info) {
+                                                            $columns['sales'] = $combos_info['sales'] + $order_detail_info['buy_number'];
+                                                            if ($combos_info['custom_sales']) {
+                                                                $columns['custom_sales'] = $combos_info['custom_sales'] + $order_detail_info['buy_number'];
+                                                            }
+                                                            $this->Combos_model->save($columns, ['id'=>$combos_info['id']]);
+                                                        }
+                                                        
                                                     }
                                                     //创建惠生活订单
                                                     if ($item_info['order_type'] == 1) {
-                                                        if ($order_detail_info['item_type'] == 1) {
-                                                            $this->load->model('Share_goods_model', '', TRUE);
-                                                            $share_goods_info = $this->Share_goods_model->get('goods_id', ['id'=>$order_detail_info['item_id']]);
-                                                            $combos_info = $this->Combos_model->get('product_id', ['id'=>$share_goods_info['goods_id']]);
-                                                        } else {
-                                                            $combos_info = $this->Combos_model->get('product_id', ['id'=>$order_detail_info['item_id']]);
-                                                        }
+
                                                         $biz_content = [
                                                             'ProductID' => $combos_info['product_id'],
                                                             'OrderList' => [['OrderNo'=>$item_info['order_number'],'CustName'=>$user_info['nickname'],'CustPhone'=>$user_info['mobile'],'Num'=>$order_detail_info['buy_number']]]
@@ -2168,6 +2531,7 @@ class Napi extends CI_Controller
         }
         echo $this->returnInfo("FAIL", $msg);
     }
+
 
     private function returnInfo($type, $msg) {
         $return_xml="<xml>"
@@ -2217,18 +2581,31 @@ class Napi extends CI_Controller
                         $this->Orders_process_model->save($fields);
                         $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$item_info['id']]);
                         if ($order_detail_info) {
-                            if ($order_detail_info['item_type'] == 0) {
-                                $this->Combos_model->save_column('sales', "sales+{$order_detail_info['buy_number']}", ['id'=>$order_detail_info['item_id']]);
+                            //加销量
+                            if ($order_detail_info['item_type'] == 1) {
+                                $this->load->model('Share_goods_model', '', TRUE);
+                                $share_goods_info = $this->Share_goods_model->get('goods_id', ['id'=>$order_detail_info['item_id']]);
+                                $combos_info = $this->Combos_model->get('id,product_id,sales,custom_sales', ['id'=>$share_goods_info['goods_id']]);
+                                if ($combos_info) {
+                                    $columns['sales'] = $combos_info['sales'] + $order_detail_info['buy_number'];
+                                    if ($combos_info['custom_sales']) {
+                                        $columns['custom_sales'] = $combos_info['custom_sales'] + $order_detail_info['buy_number'];
+                                    }
+                                    $this->Combos_model->save($columns, ['id'=>$combos_info['id']]);
+                                }
+                            } else {
+                                $combos_info = $this->Combos_model->get('id,product_id,sales,custom_sales', ['id'=>$order_detail_info['item_id']]);
+                                if ($combos_info) {
+                                    $columns['sales'] = $combos_info['sales'] + $order_detail_info['buy_number'];
+                                    if ($combos_info['custom_sales']) {
+                                        $columns['custom_sales'] = $combos_info['custom_sales'] + $order_detail_info['buy_number'];
+                                    }
+                                    $this->Combos_model->save($columns, ['id'=>$combos_info['id']]);
+                                }
+                                
                             }
                             //创建惠生活订单
                             if ($item_info['order_type'] == 1) {
-                                if ($order_detail_info['item_type'] == 1) {
-                                    $this->load->model('Share_goods_model', '', TRUE);
-                                    $share_goods_info = $this->Share_goods_model->get('goods_id', ['id'=>$order_detail_info['item_id']]);
-                                    $combos_info = $this->Combos_model->get('product_id', ['id'=>$share_goods_info['goods_id']]);
-                                } else {
-                                    $combos_info = $this->Combos_model->get('product_id', ['id'=>$order_detail_info['item_id']]);
-                                }
                                 $biz_content = [
                                     'ProductID' => $combos_info['product_id'],
                                     'OrderList' => [['OrderNo'=>$item_info['order_number'],'CustName'=>$user_info['nickname'],'CustPhone'=>$user_info['mobile'],'Num'=>$order_detail_info['buy_number']]]
@@ -2358,7 +2735,7 @@ class Napi extends CI_Controller
         if ($type_id) {
             $str_where .= " and category_id = {$type_id}";
         }
-        $item_list = $this->Share_goods_model->gets('id,name,cover_image,price,reward,stock,stock_total,type,goods_id', $str_where, $per_page, $per_page * ($page - 1), 'browse_num');
+        $item_list = $this->Share_goods_model->gets('id,name,cover_image,price,reward,stock,stock_total,type,goods_id', $str_where, $per_page, $per_page * ($page - 1));
         if ($item_list) {
             foreach ($item_list as $key=>$value) {
                 $image_arr = filter_image_path($value['cover_image']);
@@ -2468,6 +2845,11 @@ class Napi extends CI_Controller
             }
 
             $item_info['goods_type'] = $goods_type;
+            $item_info['cover_image'] = filter_image_path($item_info['cover_image'])['path_thumb'];
+            $this->load->model('Witticisms_model', '', TRUE);
+            $witticism_info = $this->Witticisms_model->gets('title', ['display'=>1], 1, 0, 'id', 'RANDOM');
+            $item_info['share_title'] = $witticism_info ? $witticism_info[0]['title'].' '.$item_info['name'] : $item_info['name'];
+
 
             if ($user_id) {
                 $this->load->model('Browsing_histories_model','',TRUE);
@@ -2691,7 +3073,7 @@ class Napi extends CI_Controller
     }
 
     /**
-     * 商家确认订单
+     * 商家确认订单--扫码验券
      */
     public function business_confirm_order($order_id = null)
     {
@@ -2716,29 +3098,54 @@ class Napi extends CI_Controller
             );
             $this->Orders_process_model->save($orders_process_data);
 
-            //推广返佣
-            $this->load->model('Orders_detail_model', '', TRUE);
-            $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$order_info['id']]);
-            if ($order_detail_info['item_type'] == 1) {
-                $parent_info = $this->User_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
-                if ($parent_info) {
-                    $balance = $parent_info['total'] + $order_detail_info['reward'];
-                    $data = [
-                        'user_id' => $parent_info['id'],
-                        'price' => $order_detail_info['reward'],
-                        'balance' => $balance,
-                        'store_id' => $order_info['store_id'],
-                        'type' => 'order_reward',
-                        'ret_id' => $order_info['id'],
-                        'from_user_id' => $order_info['user_id'],
-                        'cause' => '吆喝推广佣金'
-                    ];
-                    $this->load->model('Financial_model', '', TRUE);
-                    if ($this->Financial_model->save($data)) {
-                        $this->User_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
-                    }
-                }
-            }
+            //交易组件同步订单
+            $this->load->model('Orders_form_model', '', TRUE);
+            $this->load->model('Pay_log_model', '', TRUE);
+
+            $orders_form_info = $this->Orders_form_model->get('order_number', "find_in_set('{$order_info['id']}', order_ids)");
+            $order_number = $orders_form_info ? $orders_form_info['order_number'] : $order_info['order_number'];
+            $pay_log_info = $this->Pay_log_model->get('*', ['order_number'=>$order_number]);
+            $out_trade_no = $pay_log_info['out_trade_no'];
+            $order_user_info = $this->User_model->get('wx_openid', ['id'=>$pay_log_info['user_id']]);
+            $params = [
+                'id' => $out_trade_no,
+                'openid' => $order_user_info['wx_openid'],
+                'action_type' => 1,
+                'transaction_id' => $pay_log_info['trade_no'],
+                'pay_time' => date('Y-m-d H:i:s', $pay_log_info['notify_time'])
+            ];
+            $this->load->library('wxapiclass');
+            $this->wxapiclass->sync_order_pay($params);
+            $params = [
+                'order_number' => $out_trade_no,
+                'openid' => $order_user_info['wx_openid'],
+            ];
+            $this->wxapiclass->delivery_send($params);
+            $this->wxapiclass->delivery_recieve($params);
+
+            // //推广返佣
+            // $this->load->model('Orders_detail_model', '', TRUE);
+            // $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$order_info['id']]);
+            // if ($order_detail_info['item_type'] == 1) {
+            //     $parent_info = $this->User_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
+            //     if ($parent_info) {
+            //         $balance = $parent_info['total'] + $order_detail_info['reward'];
+            //         $data = [
+            //             'user_id' => $parent_info['id'],
+            //             'price' => $order_detail_info['reward'],
+            //             'balance' => $balance,
+            //             'store_id' => $order_info['store_id'],
+            //             'type' => 'order_reward',
+            //             'ret_id' => $order_info['id'],
+            //             'from_user_id' => $order_info['user_id'],
+            //             'cause' => '吆喝推广佣金'
+            //         ];
+            //         $this->load->model('Financial_model', '', TRUE);
+            //         if ($this->Financial_model->save($data)) {
+            //             $this->User_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
+            //         }
+            //     }
+            // }
 
             printAjaxSuccess('success', '确认成功！');
         }
@@ -2751,10 +3158,10 @@ class Napi extends CI_Controller
      */
     public function release_life_news()
     {
-        // $user_info = $this->_check_login();
+        $user_info = $this->_check_login();
 
         if ($_POST) {
-            // $this->load->model('Life_news_model', '', TRUE);
+            $this->load->model('Life_news_model', '', TRUE);
             $content = strip_tags($this->input->post('content', TRUE));
             $image_ids = $this->input->post('image_ids', TRUE);
             $lng = $this->input->post('lng', TRUE);
@@ -3514,7 +3921,7 @@ class Napi extends CI_Controller
     public function order_refund()
     {
         $user_info = $this->_check_login();
-
+        printAjaxError('fail','退款失败');
         if ($_POST) {
             $this->load->model('Orders_model', '', TRUE);
             $this->load->model('Order_refunds_model', '', TRUE);
@@ -3603,17 +4010,17 @@ class Napi extends CI_Controller
                 if ($product_info) {
                     $sold_out = (strtotime($product_info['END_DATE']) > time() && strtotime($product_info['XJ_DATE']) > time()) ? 0 : 1;
                     if ($sold_out) {
-                        $this->Combos_model->save(['display'=>0], ['id'=>$item_info['id']]);
-                        $this->Share_goods_model->save(['display'=>0], ['goods_id'=>$item_info['id']]);
+                        $this->Combos_model->save(['display'=>0, 'content'=>''], ['id'=>$item_info['id']]);
+                        $this->Share_goods_model->save(['display'=>0, 'content'=>''], ['goods_id'=>$item_info['id']]);
                     }
                 } else {
-                    $this->Combos_model->save(['display'=>0, 'type'=>0], ['id'=>$item_info['id']]);
-                    $this->Share_goods_model->save(['display'=>0], ['goods_id'=>$item_info['id']]);
+                    $this->Combos_model->save(['display'=>0, 'type'=>0, 'content'=>''], ['id'=>$item_info['id']]);
+                    $this->Share_goods_model->save(['display'=>0, 'content'=>''], ['goods_id'=>$item_info['id']]);
                 }
                 
             } else {
                 if ($item_info['stock'] <= 0) {
-                    $this->Combos_model->save(['display'=>0], ['id'=>$item_info['id']]);
+                    $this->Combos_model->save(['display'=>0, 'content'=>''], ['id'=>$item_info['id']]);
                 }
             }
         }
@@ -3754,6 +4161,42 @@ class Napi extends CI_Controller
         }
         printAjaxData(array('item_list' => $item_list, 'is_next_page' => $is_next_page));
     }
+
+
+        //获取转发的小程序码
+        public function get_wx_code($item_id = 0, $item_type = 0, $page = null)
+        {
+            $user_id = $this->session->userdata('user_id');
+            //小程序码目录
+            $save_dir='uploads/wxcode/';
+            if (!file_exists($save_dir)) {
+                mkdir($save_dir, 0777, true);
+            }
+
+            $file_name = '';
+            if ($item_type == 0) {
+                $file_name = $save_dir."combos_{$item_id}_{$user_id}.png";
+            } else {
+                $file_name = $save_dir."share_goods_{$item_id}_{$user_id}.png";
+            }
+            $page = urldecode($page);
+            if (!$page) {
+                $page = 'pages/index/index';
+            }
+
+            $scene = $item_id.'_'.$user_id;
+            $this->load->library('wxapiclass');
+            $result = $this->wxapiclass->get_wx_qr_code($page, $scene);
+    
+            file_put_contents($file_name, $result);
+    
+            $tmp_image_arr = filter_image_path($file_name);
+            $path = $tmp_image_arr['path'];
+            printAjaxData(['path'=>$path]);
+    
+        }
+
+
 }
 
 /* End of file Napi.php */

@@ -52,9 +52,10 @@ class Init_model extends CI_Model {
         return $ret;
 	}
 
-    public function get($select = '*', $strWhere = NULL) {
+    public function get($select = '*', $strWhere = NULL, $by = 'id', $order = 'DESC') {
 		$ret = array();
 		$this->db->select($select);
+		$this->db->order_by($by, $order);
 		$query = $this->db->get_where($this->_tableName, $strWhere);
 		if ($query->num_rows() > 0){
 			$ret = $query->result_array();

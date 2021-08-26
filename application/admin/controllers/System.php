@@ -13,7 +13,6 @@ class System extends CI_Controller {
 		$this->_template = $this->uri->segment(1);
 		//获取表对象
 		$this->load->model(ucfirst($this->_template).'_model', 'tableObject', TRUE);
-		$this->_tool = $this->load->view('element/system_tool', '', TRUE);
 	}
 
 

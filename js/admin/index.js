@@ -1036,11 +1036,4 @@ function delete_pattern(id, title) {
 	p_d.show();
 }
 
-function jump(page_uri, per_page) {
-    var page = $('#page').val();
-    if (page > 0 && page_uri) {
-        page = (page - 1) * per_page;
-        window.location.href = page_uri + page + '.html';
-    }
-}
 

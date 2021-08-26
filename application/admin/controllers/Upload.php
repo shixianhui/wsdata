@@ -264,8 +264,8 @@ class Upload extends CI_Controller {
 			$baseDir = './uploads';
 			$model = $_POST['model'];
 			$ret = array();
-			if ($_FILES['path_file']['tmp_name']) {
-                foreach ($_FILES['path_file']['tmp_name'] as $key=>$value) {
+			if ($_FILES['file']['tmp_name']) {
+                foreach ($_FILES['file']['tmp_name'] as $key=>$value) {
                 	if (is_uploaded_file($value)) {
                 		$uploadPath = createDateTimeDir($baseDir);
                 		$uniqueFileName = getUniqueFileName($uploadPath);
@@ -385,58 +385,6 @@ class Upload extends CI_Controller {
 	    $this->load->view('layout/default', $layout);
 	}
 	
-    //取消掉了
-	private function _batchUpload($model = 'news', $attachmentIds = NULL) {
-		$attachmentList = array();
-		$baseDir = './uploads';
-	    if (isset($_FILES['Filedata']) && is_uploaded_file($_FILES['Filedata']['tmp_name']) && $_FILES['Filedata']['error'] == 0) {
-			$uploadFile = $_FILES['Filedata'];
-		    $uploadPath = createDateTimeDir($baseDir);
-		    $uniqueFileName = getUniqueFileName($uploadPath);
-		    $fileExt = getFileExt($uploadFile['name']);
-		    $uploadFile['name'] = $uniqueFileName.'.'.$fileExt;
-			$uploadFile['filename'] = $uploadPath.'/'.$uploadFile['name'];
-			$uploadFile['smallname'] = $uploadPath.'/'.$uniqueFileName.'_thumb';
-
-	        if(@move_uploaded_file($uploadFile['tmp_name'], $uploadFile['filename'])) {
-		        //打水印
-				$watermarkInfo = $this->Watermark_model->get('*', array('id'=>1, 'is_open'=>1));
-				if ($watermarkInfo && $watermarkInfo['path']) {
-					$location = explode(',', $watermarkInfo['location']);
-					$this->_watermark($uploadFile['filename'], "./".$watermarkInfo['path'], $location[0], $location[1]);
-				}
-				if ($this->_resize($uploadFile['filename'], $this->_imageSize[$model]['width'], $this->_imageSize[$model]['height'])) {
-					if ($model == 'product') {
-				        $this->_resize($uploadFile['filename'], $this->_imageSize[$model]['max_width'], $this->_imageSize[$model]['max_height'], '_max');
-				    }
-				    //下载图片的原图
-				    if ($model == 'download') {
-				        $this->_resize($uploadFile['filename'], $this->_imageSize['download']['max_width'], $this->_imageSize['download']['max_height'], '');
-				    }
-					$fields = array(
-			              'path'=>substr($uploadFile['filename'], 2),
-			              'width'=>0,
-			              'height'=>0,
-			              'size'=>0,
-			              'alt'=>''
-			              );
-			        $attachmentId = $this->Attachment_model->save($fields);
-					if ($attachmentId) {
-						printAjaxData(array('id'=>$attachmentId, 'filePath'=>substr($uploadFile['smallname'], 2).'.'.$fileExt));
-					} else {
-					    printAjaxError('fail', '');
-					}
-				}
-			}
-		}
-
-		//初始化
-		if (! empty($attachmentIds)) {
-		    $attachmentList = $this->Attachment_model->gets('id, path, alt', 'id in ('.substr(preg_replace('/_/', ',', $attachmentIds), 0, -1).')');
-		}
-
-	    $this->load->view('upload/batch_upload', array('adminId'=>get_cookie('id'), 'attachmentList'=>$attachmentList));
-	}
 
 	public function updateAlt() {
 	    $attachmentIds = $this->input->post('attachmentIds', TRUE);
@@ -452,7 +400,7 @@ class Upload extends CI_Controller {
 	    printAjaxSuccess('', '修改成功！');
 	}
 
-    private function _upload($field, $filePath = './uploads', $ext = 'gif|jpg|jpeg|png', $maxSize = '2048') {
+    private function _upload($field, $filePath = './uploads', $ext = 'gif|jpg|jpeg|png', $maxSize = '20480') {
 	    $config['upload_path'] = createDateTimeDir($filePath);
 	    $config['file_name'] = getUniqueFileName($filePath);
 	    $config['allowed_types'] = $ext;
@@ -463,10 +411,11 @@ class Upload extends CI_Controller {
 	    if ($this->upload->do_upload($field)) {
 	        return $this->upload->data();
 	    } else {
+			var_dump($this->upload->display_errors());
 	        return false;
 	    }
 
-	    return fasle;
+	    return false;
 	}
 
     private function _resize($fileName, $width = '100', $height = '100', $thumbMarker = '_thumb') {

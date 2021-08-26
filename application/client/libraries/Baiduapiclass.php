@@ -5,18 +5,16 @@ class Baiduapiclass
     private $appId = '16140955';
     private $apiKey = 'oX7f4eDsMzgDXSMmZuRxMRLO';
     private $secretKey = 'RKH4006xs6IZNlrRpWOFXua21T534cgV';
+
     //百度AI access_token
-    function get_baidu_access_token()
+    private function get_baidu_access_token()
     {
-        $access_token = '';
-        if (isset($_SESSION['baidu_token'])) {
-            if ($_SESSION['baidu_token']['expires'] > time()) {
-                $access_token = $_SESSION['baidu_token']['data'];
-            } else {
-                unset($_SESSION['baidu_token']);
-            }
-        }
-        if (!$access_token) {
+        $this->CI->load->driver('cache');
+        $cache = $this->CI->cache->file->get_metadata('bd_token');
+        if ($cache && $cache['expire'] > time()) {
+            $access_token = $this->CI->cache->file->get('bd_token');
+        } else {
+            $access_token = '';
             $url = 'https://aip.baidubce.com/oauth/2.0/token';
             $post_data['grant_type'] = 'client_credentials';
             $post_data['client_id'] = 'oX7f4eDsMzgDXSMmZuRxMRLO';
@@ -32,15 +30,9 @@ class Baiduapiclass
             if (!isset($res->error)) {
                 $access_token = $res->access_token;
                 $expires_in = $res->expires_in;
-                $session_data = array(
-                    'data'    => $access_token,
-                    'expires' => time() + $expires_in - 60,
-                );
-                $_SESSION['baidu_token'] = $session_data;
-//            $this->session->set_tempdata('baidu_token', $access_token, 10);
+                $this->CI->cache->file->save('bd_token', $access_token, $expires_in-60);
             }
         }
-
 
         return $access_token;
     }
@@ -82,7 +74,7 @@ class Baiduapiclass
             $client = new AipContentCensor($this->appId, $this->apiKey, $this->secretKey);
         }
         $result = $client->textCensorUserDefined($content);
-        if (isset($obj_arr['error_code']) || $result['conclusionType'] != 1) {
+        if (isset($result['error_code']) || $result['conclusionType'] != 1) {
             return false;
         }
         return true;
@@ -100,7 +92,7 @@ class Baiduapiclass
             $client = new AipContentCensor($this->appId, $this->apiKey, $this->secretKey);
         }
         $result = $client->imageCensorUserDefined(file_get_contents($image));
-        if (isset($obj_arr['error_code']) || $result['conclusionType'] != 1) {
+        if (isset($result['error_code']) || $result['conclusionType'] != 1) {
             return false;
         }
         return true;

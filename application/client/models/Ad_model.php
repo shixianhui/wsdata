@@ -1,4 +1,12 @@
 <?php
+/*
+ * @Author: your name
+ * @Date: 2021-08-26 15:06:54
+ * @LastEditTime: 2021-08-26 15:06:55
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \project_station\application\client\models\Ad_model.php
+ */
 class Ad_model extends CI_Model {
 
 	private $_tableName = 'ad';
