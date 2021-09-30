@@ -51,8 +51,8 @@ class Byte_dance_api extends CI_Controller {
         }
         $user_id = $this->session->userdata("user_id");
         session_write_close();
-        $this->load->model('User_model', '', TRUE);
-        $item_info = $this->User_model->get('*', array('id' => $user_id, 'display <>'=>3));
+        $this->load->model('Users_model', '', TRUE);
+        $item_info = $this->Users_model->get('*', array('id' => $user_id, 'display <>'=>3));
         if (!$item_info) {
             printAjaxError('fail', '账号不存在');
         }
@@ -212,7 +212,7 @@ class Byte_dance_api extends CI_Controller {
         $callback = json_decode(file_get_contents("php://input"), true);
         // logs($callback);
         if($callback && $callback['type'] == 'payment') {
-            $this->load->model('User_model', '', TRUE);
+            $this->load->model('Users_model', '', TRUE);
             $this->load->model('Orders_model', '', TRUE);
             $this->load->model('Orders_form_model', '', TRUE);
             $this->load->model('Orders_process_model', '', TRUE);
@@ -243,7 +243,7 @@ class Byte_dance_api extends CI_Controller {
                         $order_info = $this->Orders_model->get('id', array("order_number" => $pay_log_info['order_number']));
                         $order_id_arr = [$order_info['id']];
                     }
-                    $user_info = $this->User_model->get('id, total, username, nickname, mobile', array('id' => $pay_log_info['user_id']));
+                    $user_info = $this->Users_model->get('id, total, username, nickname, mobile', array('id' => $pay_log_info['user_id']));
                     if ($order_id_arr && $user_info) {
 
                         $this->load->model('Orders_detail_model', '', TRUE);

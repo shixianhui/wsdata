@@ -51,7 +51,7 @@
     </div>
 </div>
 <script type="text/html" id="statusTpl">
-    {{# if(d.display != 2){ }}
+    {{# if(d.display != 3){ }}
         <input type="checkbox" name="status" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" lay-filter="statusSwitch" {{ d.status == 1 ? 'checked' : '' }}>
     {{# }else{ }}
         已注销
@@ -177,7 +177,7 @@
 
         //监听状态操作
         form.on('switch(statusSwitch)', function(obj){
-            var status = obj.elem.checked ? 1 : 0;
+            var status = obj.elem.checked ? 1 : 2;
             var url = base_url + 'admincp.php/'+controller+'/display'
             common.asyncDoRequest(url, {'ids': obj.value, 'display': status});
             return false;

@@ -54,11 +54,7 @@ class Admin extends CI_Controller {
 		$pagination = $this->pagination->create_links();
 
 		$item_list = $this->tableObject->gets_join_admin_group($strWhere, $paginationConfig['per_page'], $page);
-		if ($item_list) {
-			foreach ($item_list as $key => $value) {
-				$item_list[$key]['create_time'] = date('Y-m-d H:i:s', $value['add_time']);
-			}
-		}
+
 		$admin_group_list = $this->Admin_group_model->gets();
 
         $data = array(
@@ -84,6 +80,7 @@ class Admin extends CI_Controller {
 	    }
 
 		$prfUrl = $this->session->userdata("{$this->_template}RefUrl")?$this->session->userdata("{$this->_template}RefUrl"):base_url()."admincp.php/{$this->_template}/index";
+		$item_info = $this->tableObject->get('*', array('id'=>$id));
 		if ($_POST) {
 			$username = $this->input->post('username', TRUE);
 
@@ -95,8 +92,10 @@ class Admin extends CI_Controller {
 			          );
 		    $password = $this->input->post('password', TRUE);
 			if ($password) {
-				  $addTime = time();
-				  $fields['add_time'] = $addTime;
+				  $addTime = $id ? strtotime($item_info['create_time']) : time();
+				  if (!$id) {
+					  $fields['create_time'] = date('Y-m-d H:i:s', $addTime);
+				  }
 			      $fields['password'] = $this->createPasswordSALT($username, $addTime, $password);
 			}
 			if (empty($id)) {
@@ -113,7 +112,6 @@ class Admin extends CI_Controller {
 		}
 
 		$admin_group_list = $this->Admin_group_model->gets();
-		$item_info = $this->tableObject->get('*', array('id'=>$id));
 	    $data = array(
 		        'tool'=>$this->_tool,
 	            'item_info'=>$item_info,

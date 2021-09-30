@@ -22,7 +22,7 @@ class Nupload extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         $this->load->model('Attachment_model', '', TRUE);
         $this->load->model('Watermark_model', '', TRUE);
         $this->load->helper(array('url', 'my_fileoperate', 'my_ajaxerror'));
@@ -102,7 +102,7 @@ class Nupload extends CI_Controller {
         }
         if ($_POST) {
             $user_id = $this->session->userdata("user_id");
-            $user_info = $this->User_model->get('id', array('id' => $user_id));
+            $user_info = $this->Users_model->get('id', array('id' => $user_id));
             if (!$user_info) {
                 printAjaxError('fail', '请登录');
             }
@@ -132,7 +132,7 @@ class Nupload extends CI_Controller {
                                 $path = substr($uploadFile['filename'], 2);
                                 $tmp_image_arr = $this->_fliter_image_path($path);
                                 if ($model == 'user') {
-                                    if (!$this->User_model->save(array('path' => $path), array('id' => $user_info['id']))) {
+                                    if (!$this->Users_model->save(array('path' => $path), array('id' => $user_info['id']))) {
                                         printAjaxError('fail', '用户头像修改失败');
                                     }
                                 }
@@ -159,7 +159,7 @@ class Nupload extends CI_Controller {
         if ($_POST) {
             $model = $this->input->post('model', TRUE);
             $user_id = $this->session->userdata("user_id");
-            $user_info = $this->User_model->get('id', array('id' => $user_id));
+            $user_info = $this->Users_model->get('id', array('id' => $user_id));
             if (!$user_info) {
                 printAjaxError('login', '用户信息不存在');
             }

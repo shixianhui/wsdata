@@ -40,6 +40,7 @@ class Menus extends CI_Controller {
 			$permissions = $this->input->post('permissions', TRUE);
 			$status = $this->input->post('status', TRUE);
 			$icon = $this->input->post('icon', TRUE);
+			$type = $this->input->post('type', TRUE);
 			
 			$fields = array(
 				'parent_id'=>  $parent_id,
@@ -48,7 +49,7 @@ class Menus extends CI_Controller {
 				'component'=>         $component,
 				'status'=>       $status ? 1 : 0,
 				'sort'=>         $this->input->post('sort', TRUE),
-				'type'=>         $this->input->post('type', TRUE),
+				'type'=>         $type,
 				'href'=>         $this->input->post('href', TRUE),
 				'icon'=>         $icon,
 			);
@@ -84,7 +85,16 @@ class Menus extends CI_Controller {
 						$v_tag_file = './'.APPPATH."views/{$component}";
 						$this->_recurse_copy($v_src_file, $v_tag_file);
 					}
+					if ($type == 1 && $permissions == 'index') {
+						$params = [
+							['type'=>2, 'parent_id'=>$ret, 'title'=>'新增', 'component'=>$component, 'permissions'=>'create'],
+							['type'=>2, 'parent_id'=>$ret, 'title'=>'编辑', 'component'=>$component, 'permissions'=>'edit'],
+							['type'=>2, 'parent_id'=>$ret, 'title'=>'删除', 'component'=>$component, 'permissions'=>'delete']
+						];
+						$this->tableObject->save_batch($params);
+					}
 				}
+
 				printAjaxSuccess('close_layer', $id ? '修改成功' : '添加成功');
 			} else {
 				printAjaxError("操作失败！");

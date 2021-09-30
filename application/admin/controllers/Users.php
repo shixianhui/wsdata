@@ -1,6 +1,6 @@
 <?php
 class Users extends CI_Controller {
-	private $_displayArr = array('0'=>'禁用', '1'=>'启用', '2'=>'注销');
+	private $_displayArr = array('1'=>'启用', '2'=>'禁用', '3'=>'注销');
 	private $_sexArr = array('0'=>'未知', '1'=>'男', '2'=>'女');
 	private $_typeArr = array('0'=>'普通会员');
 	private $_title = '会员管理';
@@ -28,10 +28,10 @@ class Users extends CI_Controller {
             $this->session->unset_userdata("search");
         }
 		$this->session->set_userdata(array("{$this->_template}RefUrl"=>base_url().'admincp.php/'.uri_string()));
-		$strWhere = NULL;
+		$strWhere = "{$this->_table}.status > 0";
         $strWhere = $this->session->userdata($this->_template.'_search')?$this->session->userdata($this->_template.'_search'):$strWhere;
 		if ($_POST) {
-			$strWhere = "{$this->_table}.id > 0";
+			$strWhere = "{$this->_table}.status > 0";
 
 			$id = $this->input->post('id', TRUE);
 		    $username = trim($this->input->post('username', TRUE));
@@ -133,8 +133,11 @@ class Users extends CI_Controller {
 
 		    $password = trim($this->input->post('password', TRUE));
 			if ($password) {
-				  $addTime = time();
-			      $fields['password'] = $this->_createPasswordSALT($username, $addTime, $password);
+				$addTime = $id ? strtotime($item_info['create_time']) : time();
+				if (!$id) {
+					$fields['create_time'] = date('Y-m-d H:i:s', $addTime);
+				}
+			    $fields['password'] = $this->_createPasswordSALT($username, $addTime, $password);
 			}
 			if (empty($id)) {
 			    if ($this->tableObject->validateUnique($username)) {
@@ -143,7 +146,7 @@ class Users extends CI_Controller {
 			}
 
 		    if ($this->tableObject->save($fields, $id?array('id'=>$id):$id)) {
-		    	printAjaxSuccess($prfUrl);
+		    	printAjaxSuccess('close_layer','添加成功');
 			} else {
 				printAjaxError('fail', "操作失败！");
 			}

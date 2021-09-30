@@ -63,7 +63,7 @@
                 <li class="layui-nav-item layuimini-setting">
                     <a href="javascript:;"><?=$username?></a>
                     <dl class="layui-nav-child">
-                        <dd>
+                        <!-- <dd>
                             <a href="javascript:;" layuimini-content-href="page/user-setting.html" data-title="基本资料" data-icon="fa fa-gears">基本资料<span class="layui-badge-dot"></span></a>
                         </dd>
                         <dd>
@@ -71,7 +71,7 @@
                         </dd>
                         <dd>
                             <hr>
-                        </dd>
+                        </dd> -->
                         <dd>
                             <a href="javascript:;" class="login-out">退出登录</a>
                         </dd>

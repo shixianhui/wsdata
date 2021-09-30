@@ -1,11 +1,12 @@
 <?php
-class Orders_process_model extends CI_Model {
 
-	private $_tableName = 'orders_process';
+class Users_model extends CI_Model {
 
-	public function __construct() {
-		 parent::__construct();
-	}
+    private $_tableName = 'users';
+
+    public function __construct() {
+        parent::__construct();
+    }
 
     public function save($data, $where = NULL) {
 		if (! empty($where)) {
@@ -71,6 +72,42 @@ class Orders_process_model extends CI_Model {
         }
         return $count;
     }
+
+
+    public function validateUnique($username) {
+        $adminInfo = $this->get('*', array("lower(username)" => strtolower($username)));
+        if ($adminInfo) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public function login($username, $password) {
+        $userInfo = $this->get('*', array("lower(username)" => strtolower($username)));
+        if ($userInfo) {
+            if ($userInfo['password'] == $this->getPasswordSalt($username, $password)) {
+                return $userInfo;
+            }
+        }
+
+        return false;
+    }
+
+    public function getPasswordSalt($username, $password) {
+        $addTime = 0;
+        $this->db->select("{$this->_tableName}.create_time");
+        $query = $this->db->get_where($this->_tableName, array('lower(username)' => strtolower($username)));
+        if ($query->num_rows() > 0) {
+            $ret = $query->result_array();
+            $addTime = strtotime($ret[0]['create_time']);
+        }
+
+        return md5(strtolower($username) . $addTime . $password);
+    }
+
 }
-/* End of file advertising_model.php */
-/* Location: ./application/admin/models/advertising_model.php */
+
+/* End of file admin_model.php */
+/* Location: ./application/admin/models/admin_model.php */

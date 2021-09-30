@@ -124,11 +124,11 @@ class Admin_model extends CI_Model {
 	
 	public function getPasswordSalt($username, $password) {
 		$addTime = 0;
-	    $this->db->select("{$this->_tableName}.add_time");
+	    $this->db->select("{$this->_tableName}.create_time");
 		$query = $this->db->get_where($this->_tableName, array('username'=>$username));
 	    if ($query->num_rows() > 0) {
             $ret = $query->result_array();
-            $addTime = $ret[0]['add_time'];
+            $addTime = strtotime($ret[0]['create_time']);
         }
         
         return md5($username.$addTime.$password);

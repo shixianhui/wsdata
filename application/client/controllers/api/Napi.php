@@ -26,7 +26,7 @@ class Napi extends CI_Controller
     }
 
     private function _tmp_user_info($user_id = NULL, $session_id = 0, $is_new = 0) {
-        $user_info = $this->User_model->get('id,username,mobile,path,nickname,total,sex,real_name,type', array('id' => $user_id));
+        $user_info = $this->Users_model->get('id,username,mobile,path,nickname,total,sex,real_name,type', array('id' => $user_id));
         $user_info['session_id'] = $session_id;
         $tmp_path = filter_image_path($user_info['path']);
         $user_info['path'] = $tmp_path['path'];
@@ -93,8 +93,8 @@ class Napi extends CI_Controller
         }
         $user_id = $this->session->userdata("user_id");
         session_write_close();
-        $this->load->model('User_model', '', TRUE);
-        $item_info = $this->User_model->get('*', array('id' => $user_id, 'display <>'=>3));
+        $this->load->model('Users_model', '', TRUE);
+        $item_info = $this->Users_model->get('*', array('id' => $user_id, 'display <>'=>3));
         if (!$item_info) {
             printAjaxError('fail', '账号不存在');
         }
@@ -133,7 +133,7 @@ class Napi extends CI_Controller
     public function login()
     {
         if ($_POST) {
-            $this->load->model('User_model', '', TRUE);
+            $this->load->model('Users_model', '', TRUE);
             $username = trim($this->input->post('username', TRUE));
             $password = $this->input->post('password', TRUE);
             if (!$username) {
@@ -142,11 +142,11 @@ class Napi extends CI_Controller
             if (!$password) {
                 printAjaxError('password', '登录密码不能为空');
             }
-            $count = $this->User_model->count(array('lower(username)' => strtolower($username)));
+            $count = $this->Users_model->count(array('lower(username)' => strtolower($username)));
             if (!$count) {
                 printAjaxError('username', '用户名不存在，登录失败');
             }
-            $user_info = $this->User_model->login($username, $password);
+            $user_info = $this->Users_model->login($username, $password);
             if (!$user_info) {
                 printAjaxError('fail', '用户名或密码错误，登录失败');
             }
@@ -167,7 +167,7 @@ class Napi extends CI_Controller
      * 手机验证码登录
      */
     public function mobile_login() {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         $this->load->model('Sms_model', '', TRUE);
 
         if ($_POST) {
@@ -187,7 +187,7 @@ class Napi extends CI_Controller
             if (!$this->Sms_model->get('id', "smscode = '{$smscode}' and mobile = '{$mobile}' and add_time > {$timestamp}")) {
                 printAjaxError('smscode', '短信验证码错误或者已过期');
             }
-            $user_info = $this->User_model->get('id,username,nickname,push_cid', array('username'=>$mobile, 'display <>'=>3));
+            $user_info = $this->Users_model->get('id,username,nickname,push_cid', array('username'=>$mobile, 'display <>'=>3));
 
             if ($user_info){
                 $fields = array(
@@ -197,7 +197,7 @@ class Napi extends CI_Controller
                     $fields['push_cid'] = $push_cid;
                 }
 
-                $ret_id = $this->User_model->save($fields, array('id' => $user_info['id']));
+                $ret_id = $this->Users_model->save($fields, array('id' => $user_info['id']));
 
                 $session_id = session_id();
                 $this->_set_session($user_info['id']);
@@ -214,7 +214,7 @@ class Napi extends CI_Controller
                     'parent_id' => $parent_id,
                     'push_cid' => $push_cid ? $push_cid : ''
                 );
-                $user_id = $this->User_model->save($data);
+                $user_id = $this->Users_model->save($data);
                 if (!$user_id){
                     printAjaxError('fail','注册失败');
                 }
@@ -285,10 +285,10 @@ class Napi extends CI_Controller
             $this->Bonus_record_model->save($reg_data);
             //邀新奖励
             if ($parent_id) {
-                $parent_info = $this->User_model->get('reward', ['id'=>$parent_id, 'display' => 1]);
+                $parent_info = $this->Users_model->get('reward', ['id'=>$parent_id, 'display' => 1]);
                 if ($parent_info) {
                     $reward_balance = $parent_info['reward'] + $system_info['invite_reward'];
-                    if ($this->User_model->save(['reward'=>$reward_balance], ['id'=>$parent_id])) {
+                    if ($this->Users_model->save(['reward'=>$reward_balance], ['id'=>$parent_id])) {
                         $financial_data = [
                             'cause' => '邀请新用户',
                             'price' => $system_info['invite_reward'],
@@ -326,7 +326,7 @@ class Napi extends CI_Controller
     public function third_login_to_user()
     {
         if ($_POST) {
-            $this->load->model('User_model', '', TRUE);
+            $this->load->model('Users_model', '', TRUE);
             $sex = $this->input->post('sex', TRUE);
             $unionid = $this->input->post('unionid', TRUE);
             $path_url = $this->input->post('path_url', TRUE);
@@ -340,9 +340,9 @@ class Napi extends CI_Controller
             }
             $user_info = NULL;
             if ($type == 'weixin') {
-                $user_info = $this->User_model->get('*', array('wx_unionid' => $unionid, 'display <>'=>3));
+                $user_info = $this->Users_model->get('*', array('wx_unionid' => $unionid, 'display <>'=>3));
             } else if ($type == 'qq') {
-                $user_info = $this->User_model->get('*', array('qq_unionid' => $unionid, 'display <>'=>3));
+                $user_info = $this->Users_model->get('*', array('qq_unionid' => $unionid, 'display <>'=>3));
             } else {
                 printAjaxError('fail', '无效的登录认证通道');
             }
@@ -356,7 +356,7 @@ class Napi extends CI_Controller
                 if ($push_cid && $user_info['push_cid'] != $push_cid) {
                     $fields['push_cid'] = $push_cid;
                 }
-                $this->User_model->save($fields, array('id'=>$user_info['id']));
+                $this->Users_model->save($fields, array('id'=>$user_info['id']));
 
                 $session_id = 0;
                 if ($user_info['display'] == 1) {
@@ -386,7 +386,7 @@ class Napi extends CI_Controller
                 } else if ($type == 'qq') {
                     $fields['qq_unionid'] = $unionid;
                 }
-                $ret_id = $this->User_model->save($fields);
+                $ret_id = $this->Users_model->save($fields);
                 if (!$ret_id) {
                     printAjaxError('fail', '登录失败');
                 }
@@ -403,7 +403,7 @@ class Napi extends CI_Controller
      */
     public function wx_login()
     {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         if ($_POST) {
             $code = $this->input->post("code", true);
             $iv = $this->input->post('iv', TRUE);
@@ -439,7 +439,7 @@ class Napi extends CI_Controller
             $get_user_info = json_decode($data);
             
 
-            $user_info = $this->User_model->get('*', array('wx_unionid' => $obj->unionid, 'display <>'=>3));
+            $user_info = $this->Users_model->get('*', array('wx_unionid' => $obj->unionid, 'display <>'=>3));
 
             //已绑定用户直接登录
             if ($user_info) {
@@ -453,7 +453,7 @@ class Napi extends CI_Controller
                 if (!$user_info['wx_openid']) {
                     $fields['wx_openid'] = $obj->openid;
                 }
-                $this->User_model->save($fields, array('id' => $user_info['id']));
+                $this->Users_model->save($fields, array('id' => $user_info['id']));
 
                 $session_id = 0;
                 if ($user_info['display'] == 1) {
@@ -481,7 +481,7 @@ class Napi extends CI_Controller
                     $fields['parent_id'] = $parent_id;
                 }
 
-                $ret_id = $this->User_model->save($fields);
+                $ret_id = $this->Users_model->save($fields);
                 if (!$ret_id) {
                     printAjaxError('fail', '登录失败');
                 }
@@ -505,8 +505,8 @@ class Napi extends CI_Controller
             $encryptedData = $this->input->post('encryptedData', TRUE);
             $user_id = $this->input->post('user_id', TRUE);
 
-            $this->load->model('User_model', '', TRUE);
-            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            $this->load->model('Users_model', '', TRUE);
+            $user_info = $this->Users_model->get('*', ['id'=>$user_id]);
             if (!$user_info) {
                 printAjaxError('fail', '参数异常');
             }
@@ -532,15 +532,15 @@ class Napi extends CI_Controller
             $get_phone_info = json_decode($data);
             $mobile = $get_phone_info->purePhoneNumber;
 
-            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            $mobile_user_info = $this->Users_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
             if ($mobile_user_info){
                 $user_id = $mobile_user_info['id'];
-                $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
                 if ($result) {
-                    $this->User_model->delete(['id'=>$user_info['id']]);
+                    $this->Users_model->delete(['id'=>$user_info['id']]);
                 }
             } else {
-                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
                 //新用户奖励等
                 $this->reg_reward($user_id, $user_info['parent_id']);
             }
@@ -559,14 +559,14 @@ class Napi extends CI_Controller
      * 注册-绑定手机号
      */
     public function app_bind_mobile() {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         $this->load->model('Sms_model', '', TRUE);
 
         if ($_POST) {
             $mobile = $this->input->post('mobile', TRUE);
             $smscode = $this->input->post('smscode', TRUE);
             $user_id = $this->input->post('user_id', TRUE);
-            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            $user_info = $this->Users_model->get('*', ['id'=>$user_id]);
             if (!$user_info) {
                 printAjaxError('fail', '参数异常');
             }
@@ -584,15 +584,15 @@ class Napi extends CI_Controller
                 printAjaxError('smscode', '短信验证码错误或者已过期');
             }
 
-            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            $mobile_user_info = $this->Users_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
             if ($mobile_user_info){
                 $user_id = $mobile_user_info['id'];
-                $result = $this->User_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('wx_unionid' => $user_info['wx_unionid'],'wx_openid'=>$user_info['wx_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
                 if ($result) {
-                    $this->User_model->delete(['id'=>$user_info['id']]);
+                    $this->Users_model->delete(['id'=>$user_info['id']]);
                 }
             } else {
-                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
                 //新用户奖励等
                 $this->reg_reward($user_id, $user_info['parent_id']);
             }
@@ -616,7 +616,7 @@ class Napi extends CI_Controller
      */
     public function byte_login()
     {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         if ($_POST) {
             $code = $this->input->post("code", true);
             $iv = $this->input->post('iv', TRUE);
@@ -652,7 +652,7 @@ class Napi extends CI_Controller
 
             $get_user_info = json_decode($data);
 
-            $user_info = $this->User_model->get('*', array('byte_unionid' => $obj->unionid, 'display <>'=>3));
+            $user_info = $this->Users_model->get('*', array('byte_unionid' => $obj->unionid, 'display <>'=>3));
 
             //已绑定用户直接登录
             if ($user_info) {
@@ -666,7 +666,7 @@ class Napi extends CI_Controller
                 if (!$user_info['byte_openid']) {
                     $fields['byte_openid'] = $obj->openid;
                 }
-                $this->User_model->save($fields, array('id' => $user_info['id']));
+                $this->Users_model->save($fields, array('id' => $user_info['id']));
 
                 $session_id = 0;
                 if ($user_info['display'] == 1) {
@@ -694,7 +694,7 @@ class Napi extends CI_Controller
                     $fields['parent_id'] = $parent_id;
                 }
 
-                $ret_id = $this->User_model->save($fields);
+                $ret_id = $this->Users_model->save($fields);
                 if (!$ret_id) {
                     printAjaxError('fail', '登录失败');
                 }
@@ -718,8 +718,8 @@ class Napi extends CI_Controller
             $encryptedData = $this->input->post('encryptedData', TRUE);
             $user_id = $this->input->post('user_id', TRUE);
 
-            $this->load->model('User_model', '', TRUE);
-            $user_info = $this->User_model->get('*', ['id'=>$user_id]);
+            $this->load->model('Users_model', '', TRUE);
+            $user_info = $this->Users_model->get('*', ['id'=>$user_id]);
             if (!$user_info) {
                 printAjaxError('fail', '参数异常');
             }
@@ -745,15 +745,15 @@ class Napi extends CI_Controller
             $get_phone_info = json_decode($data);
             $mobile = $get_phone_info->purePhoneNumber;
 
-            $mobile_user_info = $this->User_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
+            $mobile_user_info = $this->Users_model->get('*', array("username" => $mobile,'id <>'=>$user_id, 'display <>'=>3));
             if ($mobile_user_info){
                 $user_id = $mobile_user_info['id'];
-                $result = $this->User_model->save(array('byte_unionid' => $user_info['byte_unionid'],'byte_openid'=>$user_info['byte_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('byte_unionid' => $user_info['byte_unionid'],'byte_openid'=>$user_info['byte_openid'], 'sex'=> $user_info['sex'], 'login_time'=>time()), array('id' => $user_id));
                 if ($result) {
-                    $this->User_model->delete(['id'=>$user_info['id']]);
+                    $this->Users_model->delete(['id'=>$user_info['id']]);
                 }
             } else {
-                $result = $this->User_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
+                $result = $this->Users_model->save(array('mobile' => $mobile,'username'=>$mobile,'display'=>1, 'login_time'=>time()), array('id' => $user_id));
                 //新用户奖励等
                 $this->reg_reward($user_id, $user_info['parent_id']);
             }
@@ -807,7 +807,7 @@ class Napi extends CI_Controller
      * @return json
      */
     public function get_pass() {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         $this->load->model('Sms_model', '', TRUE);
         if ($_POST) {
             $username = $this->input->post('username', TRUE);
@@ -832,7 +832,7 @@ class Napi extends CI_Controller
             if (!$smscode) {
                 printAjaxError('smscode', "短信验证码不能为空");
             }
-            $userInfo = $this->User_model->get('id,username', array('lower(username)' => strtolower($username)));
+            $userInfo = $this->Users_model->get('id,username', array('lower(username)' => strtolower($username)));
             if (!$userInfo) {
                 printAjaxError('fail', "手机号不存在");
             }
@@ -841,9 +841,9 @@ class Napi extends CI_Controller
                 printAjaxError('smscode', '短信验证码错误或者已过期');
             }
             $fields = array(
-                'password' => $this->User_model->getPasswordSalt($userInfo['username'], $refPassword)
+                'password' => $this->Users_model->getPasswordSalt($userInfo['username'], $refPassword)
             );
-            if ($this->User_model->save($fields, array('id' => $userInfo['id']))) {
+            if ($this->Users_model->save($fields, array('id' => $userInfo['id']))) {
                 printAjaxSuccess('success', '密码修改成功');
             } else {
                 printAjaxError('fail', '密码修改失败');
@@ -858,7 +858,7 @@ class Napi extends CI_Controller
      * @return json
      */
     public function get_sms_code() {
-        $this->load->model('User_model', '', TRUE);
+        $this->load->model('Users_model', '', TRUE);
         $this->load->model('Sms_model', '', TRUE);
         if ($_POST) {
             $type = $this->input->post('type', TRUE);
@@ -868,17 +868,17 @@ class Napi extends CI_Controller
             }
 
             if ($type == 'reg') {
-                $count = $this->User_model->count(array("username" => $mobile));
+                $count = $this->Users_model->count(array("username" => $mobile));
                 if ($count) {
                     printAjaxError('username', '此手机号已被使用');
                 }
             } else if ($type == 'get_pass') {
-                $count = $this->User_model->count(array("username" => $mobile));
+                $count = $this->Users_model->count(array("username" => $mobile));
                 if ($count == 0) {
                     printAjaxError('username', '您注册的手机号不存在!');
                 }
             } else if ($type == 'change_mobile') {
-                $count = $this->User_model->count(array("mobile" => $mobile));
+                $count = $this->Users_model->count(array("mobile" => $mobile));
                 if ($count) {
                     printAjaxError('username', '此手机已被使用');
                 }
@@ -991,10 +991,10 @@ class Napi extends CI_Controller
             if (!$nickname) {
                 printAjaxError('fail', '昵称不能为空');
             }
-            if ($this->User_model->count(['nickname'=>$nickname, 'id <>'=>$user_info['id']])) {
+            if ($this->Users_model->count(['nickname'=>$nickname, 'id <>'=>$user_info['id']])) {
                 printAjaxError('fail', '昵称已被占用');
             }
-            $result = $this->User_model->save(array('nickname' => $nickname), array('id' => $user_info['id']));
+            $result = $this->Users_model->save(array('nickname' => $nickname), array('id' => $user_info['id']));
             if ($result) {
                 printAjaxSuccess('success', '修改成功');
             } else {
@@ -1983,7 +1983,7 @@ class Napi extends CI_Controller
                 if($ret){
                     //抵扣金
                     if ($deduction_amount > 0) {
-                        if ($this->User_model->save(['reward'=>$user_info['reward'] - $deduction_amount], ['id'=>$user_info['id']])) {
+                        if ($this->Users_model->save(['reward'=>$user_info['reward'] - $deduction_amount], ['id'=>$user_info['id']])) {
                             $fields = [
                                 'cause' => '订单抵扣',
                                 'price' => $deduction_amount,
@@ -2066,8 +2066,8 @@ class Napi extends CI_Controller
                         $this->load->model('Orders_detail_model', '', TRUE);
                         $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$order_info['id']]);
                         if ($order_detail_info['item_type'] == 1) {
-                            $this->load->model('User_model', '', TRUE);
-                            $parent_info = $this->User_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
+                            $this->load->model('Users_model', '', TRUE);
+                            $parent_info = $this->Users_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
                             if ($parent_info) {
                                 $balance = $parent_info['total'] + $order_detail_info['reward'];
                                 $data = [
@@ -2082,7 +2082,7 @@ class Napi extends CI_Controller
                                 ];
                                 $this->load->model('Financial_model', '', TRUE);
                                 if ($this->Financial_model->save($data)) {
-                                    $this->User_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
+                                    $this->Users_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
                                 }
                             }
                         }
@@ -2380,7 +2380,7 @@ class Napi extends CI_Controller
                     && $result["return_code"] == "SUCCESS"
                     && $result["result_code"] == "SUCCESS"
                 ) {
-                    $this->load->model('User_model', '', TRUE);
+                    $this->load->model('Users_model', '', TRUE);
                     $this->load->model('Orders_model', '', TRUE);
                     $this->load->model('Orders_form_model', '', TRUE);
                     $this->load->model('Orders_process_model', '', TRUE);
@@ -2436,7 +2436,7 @@ class Napi extends CI_Controller
                                 // $this->wxapiclass->delivery_send($params);
                                 // $this->wxapiclass->delivery_recieve($params);
 
-                                $user_info = $this->User_model->get('id, total, username, nickname, mobile', array('id' => $pay_log_info['user_id']));
+                                $user_info = $this->Users_model->get('id, total, username, nickname, mobile', array('id' => $pay_log_info['user_id']));
                                 if ($order_id_arr && $user_info) {
                                     $this->load->model('Orders_detail_model', '', TRUE);
                                     $this->load->model('Combos_model', '', TRUE);
@@ -3106,7 +3106,7 @@ class Napi extends CI_Controller
             $order_number = $orders_form_info ? $orders_form_info['order_number'] : $order_info['order_number'];
             $pay_log_info = $this->Pay_log_model->get('*', ['order_number'=>$order_number]);
             $out_trade_no = $pay_log_info['out_trade_no'];
-            $order_user_info = $this->User_model->get('wx_openid', ['id'=>$pay_log_info['user_id']]);
+            $order_user_info = $this->Users_model->get('wx_openid', ['id'=>$pay_log_info['user_id']]);
             $params = [
                 'id' => $out_trade_no,
                 'openid' => $order_user_info['wx_openid'],
@@ -3127,7 +3127,7 @@ class Napi extends CI_Controller
             // $this->load->model('Orders_detail_model', '', TRUE);
             // $order_detail_info = $this->Orders_detail_model->get('item_id,item_type,buy_number,reward,parent_id', ['order_id'=>$order_info['id']]);
             // if ($order_detail_info['item_type'] == 1) {
-            //     $parent_info = $this->User_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
+            //     $parent_info = $this->Users_model->get('id,total', ['id'=>$order_detail_info['parent_id'], 'display'=>1]);
             //     if ($parent_info) {
             //         $balance = $parent_info['total'] + $order_detail_info['reward'];
             //         $data = [
@@ -3142,7 +3142,7 @@ class Napi extends CI_Controller
             //         ];
             //         $this->load->model('Financial_model', '', TRUE);
             //         if ($this->Financial_model->save($data)) {
-            //             $this->User_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
+            //             $this->Users_model->save(['total'=>$balance], ['id'=>$parent_info['id']]);
             //         }
             //     }
             // }
@@ -3245,7 +3245,7 @@ class Napi extends CI_Controller
         $this->load->model('Attachment_model', '', TRUE);
 
         //头像
-        $users_info = $this->User_model->get('id,nickname,path', ['id'=>$user_id]);
+        $users_info = $this->Users_model->get('id,nickname,path', ['id'=>$user_id]);
         if (!$users_info) {
             printAjaxError('fail', '参数异常');
         }
@@ -3616,7 +3616,7 @@ class Napi extends CI_Controller
             foreach ($item_list as $key=>$value) {
                 $item_list[$key]['item_image'] = filter_image_path($value['item_image'])['path_thumb'];
                 $item_list[$key]['create_time'] = date('Y-m-d H:i', strtotime($value['create_time']));
-                $cur_user_info = $this->User_model->get('nickname,path', ['id'=>$value['user_id']]);
+                $cur_user_info = $this->Users_model->get('nickname,path', ['id'=>$value['user_id']]);
                 $item_list[$key]['nickname'] = $cur_user_info ? $cur_user_info['nickname'] : '';
                 $item_list[$key]['user_avatar'] = $cur_user_info ? filter_image_path($cur_user_info['path'])['path_thumb'] : '';
                 $item_list[$key]['status'] = $value['status'] > 1 ? 2 : 1;
@@ -3742,7 +3742,7 @@ class Napi extends CI_Controller
 
             $ret_id = $this->Withdrawal_record_model->save($data);
             if ($ret_id) {
-                if ($this->User_model->save_column('total', "total-{$amount}", ['id'=>$user_info['id']])) {
+                if ($this->Users_model->save_column('total', "total-{$amount}", ['id'=>$user_info['id']])) {
                     $f_data = [
                         'user_id' => $user_info['id'],
                         'price' => -$amount,
@@ -4146,7 +4146,7 @@ class Napi extends CI_Controller
         $user_info = $this->_check_login();
 
         $strWhere = 'parent_id = ' . $user_info['id'] . ' and display = 1';
-        $item_list = $this->User_model->gets('nickname,path,add_time', $strWhere, $per_page, $per_page * ($page - 1));
+        $item_list = $this->Users_model->gets('nickname,path,add_time', $strWhere, $per_page, $per_page * ($page - 1));
         foreach ($item_list as $key => $value) {
             $item_list[$key]['create_time'] = date('Y-m-d H:i', $value['add_time']);
             $item_list[$key]['path'] = filter_image_path($value['path'])['path_thumb'];
@@ -4154,7 +4154,7 @@ class Napi extends CI_Controller
         }
 
         $cur_count = $per_page * ($page - 1) + count($item_list);
-        $total_count = $this->User_model->count($strWhere);
+        $total_count = $this->Users_model->count($strWhere);
         $is_next_page = 0;
         if ($total_count > $cur_count) {
             $is_next_page = 1;

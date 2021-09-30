@@ -82,8 +82,8 @@
         <label class="layui-form-label">状态</label>
         <div class="layui-input-block">
             <input type="radio" name="status" value="1" title="启用" checked="">
-            <input type="radio" name="status" value="0" title="禁用">
-            <input type="radio" name="status" value="2" title="已注销">
+            <input type="radio" name="status" value="2" title="禁用">
+            <input type="radio" name="status" value="3" title="已注销">
         </div>
     </div>
     <div class="layui-form-item">
@@ -103,7 +103,8 @@
             $ = layui.$;
 
         var item_info = <?=$item_info_json?>;
-        if (item_info) {
+
+        if (!$.isEmptyObject(item_info)) {
             $('#image').attr('src', item_info.path.replace('.', '_thumb.'));
             $('#image').attr('layer-src', item_info.path);
         }
