@@ -7,7 +7,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label required">物损大类</label>
         <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择物损分类" lay-search>
+            <select name="category" lay-verify="required" lay-reqtext="请选择物损分类" lay-search lay-filter="category">
                 <option value="">请选择</option>
                 <?php if ($category_list) {
                     foreach ($category_list as $value) { ?>
@@ -16,26 +16,26 @@
             </select>
         </div>
     </div>
-    <div class="layui-form-item">
+    <div class="layui-form-item" id="category_1_div">
         <label class="layui-form-label required">细分类别1</label>
         <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择细分类别1" lay-search>
+            <select name="category_1" lay-reqtext="请选择细分类别1" lay-search>
                 <option value="">请选择</option>
-                <?php if ($admin_group_list) {
-                    foreach ($admin_group_list as $value) { ?>
-                <option value="<?=$value['id']?>"><?=$value['group_name']?></option>
+                <?php if ($category_1_list) {
+                    foreach ($category_1_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['name']?></option>
                 <?php }} ?>
             </select>
         </div>
     </div>
-    <div class="layui-form-item">
+    <div class="layui-form-item" id="category_2_div">
         <label class="layui-form-label required">细分类别2</label>
         <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择细分类别2" lay-search>
+            <select name="category_2" lay-reqtext="请选择细分类别2" lay-search>
                 <option value="">请选择</option>
-                <?php if ($admin_group_list) {
-                    foreach ($admin_group_list as $value) { ?>
-                <option value="<?=$value['id']?>"><?=$value['group_name']?></option>
+                <?php if ($category_1_list) {
+                    foreach ($category_1_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['name']?></option>
                 <?php }} ?>
             </select>
         </div>
@@ -43,46 +43,42 @@
     <div class="layui-form-item">
         <label class="layui-form-label required">省份</label>
         <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择省份" lay-search>
+            <select name="province" lay-verify="required" lay-reqtext="请选择省份" lay-search lay-filter="province">
                 <option value="">请选择</option>
                 <?php if ($province_list) {
                     foreach ($province_list as $value) { ?>
-                <option value="<?=$value['id']?>"><?=$value['name']?></option>
+                <option value="<?=$value['name']?>"><?=$value['name']?></option>
                 <?php }} ?>
             </select>
         </div>
-        <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择地市" lay-search>
+        <div class="layui-input-inline" id="city_div">
+            <select name="city" lay-verify="required" lay-reqtext="请选择地市" lay-search>
                 <option value="">请选择</option>
-                <?php if ($province_list) {
-                    foreach ($province_list as $value) { ?>
-                <option value="<?=$value['id']?>"><?=$value['name']?></option>
-                <?php }} ?>
             </select>
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">品牌</label>
         <div class="layui-input-block">
-            <input type="number" name="brand" placeholder="请输入品牌" value="" class="layui-input">
+            <input type="text" name="brand" placeholder="请输入品牌" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">项目名称</label>
         <div class="layui-input-block">
-            <input type="number" name="project" placeholder="请输入项目名称" value="" class="layui-input">
+            <input type="text" name="project" placeholder="请输入项目名称" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">型号规格</label>
         <div class="layui-input-block">
-            <input type="number" name="model" placeholder="请输入型号规格" value="" class="layui-input">
+            <input type="text" name="model" placeholder="请输入型号规格" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">单位</label>
         <div class="layui-input-block">
-            <input type="number" name="unit" placeholder="请输入单位" value="" class="layui-input">
+            <input type="text" name="unit" placeholder="请输入单位" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
@@ -94,19 +90,19 @@
     <div class="layui-form-item">
         <label class="layui-form-label">单价</label>
         <div class="layui-input-block">
-            <input type="number" name="price" placeholder="请输入单价" value="" class="layui-input">
+            <input type="text" name="price" placeholder="请输入单价" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">备注</label>
         <div class="layui-input-block">
-            <input type="number" name="remark" placeholder="请输入备注" value="" class="layui-input">
+            <input type="text" name="remark" placeholder="请输入备注" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">案件来源</label>
         <div class="layui-input-block">
-            <input type="number" name="source" placeholder="请输入案件来源（可以输入易赔订单号）" value="" class="layui-input">
+            <input type="text" name="source" placeholder="请输入案件来源（可以输入易赔订单号）" value="" class="layui-input">
         </div>
     </div>
 
@@ -137,20 +133,33 @@
 </div>
 <script src="js/admin/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="js/admin/lay-config.js" charset="utf-8"></script>
+<script id="category" type="text/html">
+    <option value="">请选择</option>
+    {{#  layui.each(d.list, function(index, item){ }}
+    <option value="{{ item.id }}">{{ item.name }}</option>
+    {{#  }); }}
+</script>
+<script id="area" type="text/html">
+    <option value="">请选择</option>
+    {{#  layui.each(d.list, function(index, item){ }}
+    <option value="{{ item.name }}">{{ item.name }}</option>
+    {{#  }); }}
+</script>
 <script>
     layui.use(['common'], function () {
         var form = layui.form,
             common = layui.common,
             upload = layui.upload,
             element = layui.element,
+            laytpl = layui.laytpl,
             $ = layui.$;
 
         var item_info = <?=$item_info_json?>;
 
-        if (!$.isEmptyObject(item_info)) {
-            $('#image').attr('src', item_info.path.replace('.', '_thumb.'));
-            $('#image').attr('layer-src', item_info.path);
-        }
+        // if (!$.isEmptyObject(item_info)) {
+        //     $('#image').attr('src', item_info.path.replace('.', '_thumb.'));
+        //     $('#image').attr('layer-src', item_info.path);
+        // }
 
         layer.photos({
             photos: '#layer-photos'
@@ -209,34 +218,70 @@
             return false;
         });
 
-        form.verify({
-            password: function (value, item) {
-                if (item_info.length == 0) {
-                    if (typeof(value) == "undefined" || value.trim() == "") {
-                        return '密码不能为空';
-                    }
-                }
-                if (value != "" && !/^[\S]{6,12}$/.test(value)) {
-                    return '密码必须6到12位，且不能出现空格';
-                }
-            },
-            confirmPass:function(value){
-                if($('input[name=password]').val() !== value)
-                    return '两次密码输入不一致！';
-            }
-
-        });
-
         //表单赋值
         form.val("saveForm", {
-            'username': item_info.username,
-            'real_name': item_info.real_name,
-            'mobile': item_info.mobile,
-            'nickname': item_info.nickname,
-            'path': item_info.path,
-            'sex': item_info.sex ? item_info.sex : 1,
-            'status': item_info.status ? item_info.status : 1,
+            'category': item_info.category,
+            'category_1': item_info.category_1,
+            'category_2': item_info.category_2,
+            'province': item_info.province,
+            'city': item_info.city,
+            'brand': item_info.brand,
+            'project': item_info.project,
+            'model': item_info.model,
+            'unit': item_info.unit,
+            'num': item_info.num,
+            'price': item_info.price,
+            'remark': item_info.remark,
+            'source': item_info.source,
+            'img': item_info.img,
         });
+
+        form.on('select(category)', function(data){
+            let id = data.value
+            $.get('admincp.php/ws_data/getCategory/'+id,
+                function(res){
+                    if(res.success){
+                        var data = { //数据
+                            "list": res.data.item_list
+                        }
+                        var getTpl = category.innerHTML;
+                        laytpl(getTpl).render(data, function(html){
+                            $('#category_1_div select').html(html)
+                            $('#category_2_div select').html(html)
+                            form.render('select');
+                        });
+						return false;
+					}else{
+						layer.msg(res.message);
+						return false;
+					}
+                },
+                "json"
+            )
+        }); 
+
+        form.on('select(province)', function(data){
+            let val = data.value
+            $.get('admincp.php/ws_data/getCity/'+val,
+                function(res){
+                    if(res.success){
+                        var data = { //数据
+                            "list": res.data.item_list
+                        }
+                        var getTpl = area.innerHTML;
+                        laytpl(getTpl).render(data, function(html){
+                            $('#city_div select').html(html)
+                            form.render('select');
+                        });
+						return false;
+					}else{
+						layer.msg(res.message);
+						return false;
+					}
+                },
+                "json"
+            )
+        }); 
 
     });
 </script>

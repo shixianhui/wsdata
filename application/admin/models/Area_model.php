@@ -38,7 +38,7 @@ class Area_model extends CI_Model {
 		return $this->db->delete($this->_tableName, $where) > 0 ? TRUE : FALSE;
 	}
 
-    public function gets($select = '*',$strWhere = NULL, $limit = NULL, $offset = NULL, $by = 'id', $order = 'DESC', $sort_order = NULL) {
+    public function gets($select = '*',$strWhere = NULL, $limit = NULL, $offset = NULL, $by = 'id', $order = 'ASC', $sort_order = NULL) {
 		$ret = array();
 		$this->db->select($select);
         if ($sort_order) {

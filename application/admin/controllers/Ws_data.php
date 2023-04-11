@@ -41,7 +41,7 @@ class Ws_data extends CI_Controller {
 		// 	}
 		// 	$category_1 = $this->Category_model->get('id,name', ['name'=>$value['keyword']]);
 		// 	if (!$category_1) {
-		// 		$category_1_id = $this->Category_model->save(['name'=>$value['keyword']]);
+		// 		$category_1_id = $this->Category_model->save(['name'=>$value['keyword'], 'parent_id'=>$category_id]);
 		// 	} else {
 		// 		$category_1_id = $category_1['id'];
 		// 	}
@@ -68,16 +68,20 @@ class Ws_data extends CI_Controller {
 		
 	    if ($_POST) {
 			$strWhere = $condition;
-			$title = $this->input->post('title');
+			$keyword = $this->input->post('keyword');
+			$category = $this->input->post('category');
 			$display = $this->input->post('display');
 		    $startTime = $this->input->post('inputdate_start');
 		    $endTime = $this->input->post('inputdate_end');
-		    if (! empty($title) ) {
-		        $strWhere .= " and {$this->_table}.title REGEXP '{$title}'";
+		    if (! empty($keyword) ) {
+		        $strWhere .= " and ({$this->_table}.brand REGEXP '{$keyword}' or a.name REGEXP '{$keyword}' or b.name REGEXP '{$keyword}' or c.name REGEXP '{$keyword}')";
 		    }
 		    if ($display != "") {
 		        $strWhere .= " and {$this->_table}.display = {$display} ";
 		    }
+			if ($category) {
+		        $strWhere .= " and {$this->_table}.category = {$category} ";
+			}
 		    // if (! empty($startTime) && ! empty($endTime)) {
 		    // 	$strWhere .= " and {$this->_table}.add_time > ".strtotime($startTime.' 00:00:00')." and {$this->_table}.add_time < ".strtotime($endTime." 23:59:59")." ";
 		    // }
@@ -109,8 +113,7 @@ class Ws_data extends CI_Controller {
 		        'table'=>$this->_table,
 		        'template'=>$this->_table,
 		        'item_list'=>json_encode($item_list),
-		        'province_list'=>json_encode($province_list),
-		        'category_list'=>json_encode($category_list),
+		        'category_list'=>$category_list,
 				'table_limit' => $paginationConfig['per_page'],
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
@@ -159,15 +162,22 @@ class Ws_data extends CI_Controller {
 
 		$category_list = $this->Category_model->gets('id,name', ['parent_id'=>0]);
 		$province_list = $this->Area_model->gets('id,name', ['parent_id'=>0]);
-
+		$category_1_list = [];
+		if ($item_info) {
+			if ($item_info['category']) {
+				$category_1_list = $this->Category_model->gets('id,name', ['parent_id'=>$item_info['category']]);
+			}
+		}
 
 	    $data = array(
 		        'tool'=>$this->_tool,
 	            'item_info'=>$item_info,
+	            'item_info_json'=>json_encode($item_info),
 	    		'table'=>$this->_table,
 	            'prfUrl'=>$prfUrl,
 		        'category_list'=>$category_list,
 		        'province_list'=>$province_list,
+		        'category_1_list'=>$category_1_list,
 		        );
 		$layout = array(
 		          'title'=>$this->_title,
@@ -242,9 +252,21 @@ class Ws_data extends CI_Controller {
         }
 	}
 
-	public function getCity($id)
+	public function getCity($name)
 	{
-		$item_list = $this->Area_model->gets('id,name', ['parent_id'=>$id]);
+		$name = urldecode($name);
+		$item_list = [];
+		$item_info = $this->Area_model->get('id,name', "name regexp '{$name}'");
+		if ($item_info) {
+			$item_list = $this->Area_model->gets('id,name', ['parent_id'=>$item_info['id']]);
+		}
+
+		printAjaxData(compact('item_list'));
+	}
+
+	public function getCategory($id)
+	{
+		$item_list = $this->Category_model->gets('id,name', ['parent_id'=>$id]);
 
 		printAjaxData(compact('item_list'));
 	}

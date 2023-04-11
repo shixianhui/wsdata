@@ -6,23 +6,23 @@
                 <form class="layui-form layui-form-pane" method="post" action="admincp.php/<?=$template?>">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">用户名</label>
+                            <label class="layui-form-label">关键词</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="username" autocomplete="off" class="layui-input">
+                                <input type="text" name="keyword" autocomplete="off" class="layui-input">
                             </div>
                         </div>
-                        <!-- <div class="layui-inline">
-                            <label class="layui-form-label">会员组</label>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">物损大类</label>
                             <div class="layui-input-inline">
-                                <select name="admin_group_id" lay-search>
+                                <select name="category" lay-search>
                                     <option value="">请选择</option>
-                                    <?php if ($admin_group_list) {
-                                        foreach ($admin_group_list as $value) { ?>
-                                    <option value="<?=$value['id']?>"><?=$value['group_name']?></option>
+                                    <?php if ($category_list) {
+                                        foreach ($category_list as $value) { ?>
+                                    <option value="<?=$value['id']?>"><?=$value['name']?></option>
                                     <?php }} ?>
                                 </select>
                             </div>
-                        </div> -->
+                        </div>
 
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
@@ -163,7 +163,7 @@
             var data = obj.data;
             if (obj.event === 'edit') {
                 var index = layer.open({
-                    title: '编辑会员',
+                    title: '编辑数据',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
@@ -176,7 +176,7 @@
                 });
                 return false;
             } else if (obj.event === 'delete') {
-                layer.confirm('真的删除该会员么', function (index) {
+                layer.confirm('真的删除该条数据么', function (index) {
                     layer.close(index);
                     var url = base_url + 'admincp.php/'+controller+'/delete';
                     common.asyncDoRequest(url, {'ids': data.id}, {
@@ -195,6 +195,11 @@
             common.asyncDoRequest(url, {'ids': obj.value, 'display': status});
             return false;
         });
+
+        layer.photos({
+            photos: '#layer-photos'
+            ,anim: 5 //0-6的选择，指定弹出图片动画类型
+        }); 
 
     });
 </script>

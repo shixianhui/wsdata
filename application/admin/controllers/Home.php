@@ -30,8 +30,8 @@ class Home extends CI_Controller {
 		
 		$init_info = [
 			'homeInfo' => [
-				'title'=>'首页',
-				'href'=>"admincp.php/home/homepage.html"
+				'title'=>'物损数据库',
+				'href'=>"admincp.php/ws_data/index.html"
 			],
 			"logoInfo" => [
 				'title'=>'管理系统',
