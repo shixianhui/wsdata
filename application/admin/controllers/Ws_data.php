@@ -16,6 +16,7 @@ class Ws_data extends CI_Controller {
 		$this->load->model('Ws_data_model', '', true);
 		$this->load->model('Category_model', '', true);
 		$this->load->model('Attachment_model', '', true);
+		$this->load->model('Area_model', '', true);
 
     }
 
@@ -99,11 +100,18 @@ class Ws_data extends CI_Controller {
 
 		$item_list = $this->tableObject->gets_join_category('ws_data.*, a.name as category, b.name as category_1, c.name as category_2', $strWhere, $paginationConfig['per_page'], $page);
 
+		$province_list = $this->Area_model->gets('id,name', ['parent_id'=>0]);
+		$category_list = $this->Category_model->gets('id,name', ['parent_id'=>0]);
+
+
 		$data = array(
 		        'tool'=>$this->_tool,
 		        'table'=>$this->_table,
 		        'template'=>$this->_table,
-		        'item_list'=>$item_list,
+		        'item_list'=>json_encode($item_list),
+		        'province_list'=>json_encode($province_list),
+		        'category_list'=>json_encode($category_list),
+				'table_limit' => $paginationConfig['per_page'],
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
                 'pageCount'=>ceil($paginationCount/$paginationConfig['per_page']),
@@ -125,18 +133,21 @@ class Ws_data extends CI_Controller {
 		$prfUrl = $this->session->userdata("{$this->_controller}RefUrl")?:base_url()."admincp.php/{$this->_controller}/index";
         $item_info = $id ? $this->tableObject->get('*', array("id"=>$id)) : [];
         if ($_POST) {
-            $title = $this->input->post('title', TRUE);
-            $abstract = $this->input->post('abstract', TRUE);
-            $path = $this->input->post('path', TRUE);
-            $content = unhtml($this->input->post('content', TRUE));
-            $create_time = $this->input->post('create_time', TRUE);
             $fields = array(
-                'title' => $title,
-                'path' => $path,
-                'abstract' => $abstract,
-                'content' => $content,
-                'create_time' => $create_time,
-                
+                'category' => $this->input->post('category', TRUE),
+                'category_1' => $this->input->post('category_1', TRUE),
+                'category_2' => $this->input->post('category_2', TRUE),
+                'province' => $this->input->post('province', TRUE),
+                'city' => $this->input->post('city', TRUE),
+                'brand' => $this->input->post('brand', TRUE),
+                'project' => $this->input->post('project', TRUE),
+                'model' => $this->input->post('model', TRUE),
+                'unit' => $this->input->post('unit', TRUE),
+                'num' => $this->input->post('num', TRUE),
+                'price' => $this->input->post('price', TRUE),
+                'remark' => $this->input->post('remark', TRUE),
+                'source' => $this->input->post('source', TRUE),
+                'img' => $this->input->post('img', TRUE),
             );
             $ret = $this->tableObject->save($fields, $id ? array('id' => $id) : NULL);
             if ($ret) {
@@ -146,12 +157,17 @@ class Ws_data extends CI_Controller {
             }
         }
 
+		$category_list = $this->Category_model->gets('id,name', ['parent_id'=>0]);
+		$province_list = $this->Area_model->gets('id,name', ['parent_id'=>0]);
+
 
 	    $data = array(
 		        'tool'=>$this->_tool,
 	            'item_info'=>$item_info,
 	    		'table'=>$this->_table,
-	            'prfUrl'=>$prfUrl
+	            'prfUrl'=>$prfUrl,
+		        'category_list'=>$category_list,
+		        'province_list'=>$province_list,
 		        );
 		$layout = array(
 		          'title'=>$this->_title,
@@ -224,6 +240,13 @@ class Ws_data extends CI_Controller {
 
         	printAjaxError('fail', '属性修改失败！');
         }
+	}
+
+	public function getCity($id)
+	{
+		$item_list = $this->Area_model->gets('id,name', ['parent_id'=>$id]);
+
+		printAjaxData(compact('item_list'));
 	}
 
 

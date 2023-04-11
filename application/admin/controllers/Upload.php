@@ -247,10 +247,8 @@ class Upload extends CI_Controller {
 			}
 			$attachment = array(
 				'path' => $this->_thumbPath . '/' . $ret['raw_name'] . $ret['file_ext'],
-				'width' => $ret['image_width'],
-				'height' => $ret['image_height'],
 				'size' => $ret['file_size'],
-				'alt' => $ret['file_name']
+				'name' => $ret['file_name']
 			);
 			$ret_id = $this->Attachment_model->save($attachment);
 			printAjaxData(array('id' => $ret_id, 'field' => "r=" . rand(10000, 99999) . "", 'file_path' => $this->_thumbPath . '/' . $ret['raw_name'] . $ret['file_ext']));

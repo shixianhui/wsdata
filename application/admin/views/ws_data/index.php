@@ -77,23 +77,25 @@
                 {type: "checkbox", width: 50},
                 // {field: 'id', width: 80, title: 'ID', sort: true},
                 {field: 'category', minWidth: 120, title: '物损大类'},
-                {field: 'nickname', width: 120, title: '细分类别1'},
-                {field: 'real_name', width: 120, title: '细分类别2'},
-                {field: 'mobile', width: 120, title: '省份'},
-                {field: 'inviter_name', width: 120, title: '城市'},
-                {field: 'inviter_name', width: 120, title: '品牌'},
-                {field: 'inviter_name', width: 120, title: '项目名称'},
-                {field: 'inviter_name', width: 120, title: '型号规格'},
-                {field: 'inviter_name', width: 120, title: '单位'},
-                {field: 'inviter_name', width: 120, title: '数量'},
-                {field: 'inviter_name', width: 120, title: '单价'},
-                {field: 'inviter_name', width: 120, title: '备注'},
-                {field: 'inviter_name', width: 120, title: '图片', templet: function (d) {
-                    
+                {field: 'category_1', width: 120, title: '细分类别1'},
+                {field: 'category_2', width: 120, title: '细分类别2'},
+                {field: 'province', width: 80, title: '省份'},
+                {field: 'city', width: 80, title: '地市'},
+                {field: 'brand', width: 120, title: '品牌'},
+                {field: 'project', width: 120, title: '项目名称'},
+                {field: 'model', width: 120, title: '型号规格'},
+                {field: 'unit', width: 80, title: '单位'},
+                {field: 'num', width: 80, title: '数量'},
+                {field: 'price', width: 120, title: '单价'},
+                {field: 'remark', width: 120, title: '备注'},
+                {field: 'img', width: 120, title: '图片', templet: function (d) {
+                    return '<div class="layui-upload-list layui-inline" id="layer-photos">'
+                    +'<img class="layui-upload-img" id="image" lay-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">'
+                    +'</div>'
                 }},
-                {field: 'inviter_name', width: 120, title: '案件来源'},
-                {field: 'status', width: 100, title: '状态', templet: '#statusTpl', unresize: true},
-                {field: 'create_time', width: 180, title: '添加时间'},
+                {field: 'source', width: 120, title: '案件来源'},
+                // {field: 'status', width: 100, title: '状态', templet: '#statusTpl', unresize: true},
+                // {field: 'create_time', width: 180, title: '添加时间'},
                 {title: '操作', width: 150, toolbar: '#currentTableBar', align: "center"}
             ]],
             limit:table_limit

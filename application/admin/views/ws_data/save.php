@@ -5,27 +5,21 @@
 </style>
 <div class="layui-form layuimini-form" lay-filter="saveForm">
     <div class="layui-form-item">
-        <label class="layui-form-label required">用户名</label>
-        <div class="layui-input-block">
-            <input type="text" name="username" lay-verify="required" lay-reqtext="用户名不能为空" placeholder="请输入用户名" value="" class="layui-input" autocomplete="off">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">密码</label>
-        <div class="layui-input-block">
-            <input type="password" name="password" lay-verify="password" placeholder="请输入密码" value="" class="layui-input" autocomplete="off">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">确认密码</label>
-        <div class="layui-input-block">
-            <input type="password" name="con_password" lay-verify="password|confirmPass" placeholder="请再次输入密码" value="" class="layui-input" autocomplete="off">
-        </div>
-    </div>
-    <!-- <div class="layui-form-item">
-        <label class="layui-form-label required">管理组</label>
+        <label class="layui-form-label required">物损大类</label>
         <div class="layui-input-inline">
-            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择管理组" lay-search>
+            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择物损分类" lay-search>
+                <option value="">请选择</option>
+                <?php if ($category_list) {
+                    foreach ($category_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['name']?></option>
+                <?php }} ?>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">细分类别1</label>
+        <div class="layui-input-inline">
+            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择细分类别1" lay-search>
                 <option value="">请选择</option>
                 <?php if ($admin_group_list) {
                     foreach ($admin_group_list as $value) { ?>
@@ -33,35 +27,91 @@
                 <?php }} ?>
             </select>
         </div>
-    </div> -->
+    </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">昵称</label>
-        <div class="layui-input-block">
-            <input type="text" name="nickname" placeholder="请输入昵称" value="" class="layui-input">
+        <label class="layui-form-label required">细分类别2</label>
+        <div class="layui-input-inline">
+            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择细分类别2" lay-search>
+                <option value="">请选择</option>
+                <?php if ($admin_group_list) {
+                    foreach ($admin_group_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['group_name']?></option>
+                <?php }} ?>
+            </select>
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">真实姓名</label>
-        <div class="layui-input-block">
-            <input type="text" name="real_name" placeholder="请输入真实姓名" value="" class="layui-input">
+        <label class="layui-form-label required">省份</label>
+        <div class="layui-input-inline">
+            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择省份" lay-search>
+                <option value="">请选择</option>
+                <?php if ($province_list) {
+                    foreach ($province_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['name']?></option>
+                <?php }} ?>
+            </select>
+        </div>
+        <div class="layui-input-inline">
+            <select name="admin_group_id" lay-verify="required" lay-reqtext="请选择地市" lay-search>
+                <option value="">请选择</option>
+                <?php if ($province_list) {
+                    foreach ($province_list as $value) { ?>
+                <option value="<?=$value['id']?>"><?=$value['name']?></option>
+                <?php }} ?>
+            </select>
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">手机</label>
+        <label class="layui-form-label">品牌</label>
         <div class="layui-input-block">
-            <input type="number" name="mobile" placeholder="请输入手机号" value="" class="layui-input">
+            <input type="number" name="brand" placeholder="请输入品牌" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">性别</label>
+        <label class="layui-form-label">项目名称</label>
         <div class="layui-input-block">
-            <input type="radio" name="sex" value="1" title="男" checked="">
-            <input type="radio" name="sex" value="2" title="女">
-            <input type="radio" name="sex" value="0" title="未知">
+            <input type="number" name="project" placeholder="请输入项目名称" value="" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">头像</label>
+        <label class="layui-form-label">型号规格</label>
+        <div class="layui-input-block">
+            <input type="number" name="model" placeholder="请输入型号规格" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">单位</label>
+        <div class="layui-input-block">
+            <input type="number" name="unit" placeholder="请输入单位" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">数量</label>
+        <div class="layui-input-block">
+            <input type="number" name="num" placeholder="请输入数量" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">单价</label>
+        <div class="layui-input-block">
+            <input type="number" name="price" placeholder="请输入单价" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注</label>
+        <div class="layui-input-block">
+            <input type="number" name="remark" placeholder="请输入备注" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">案件来源</label>
+        <div class="layui-input-block">
+            <input type="number" name="source" placeholder="请输入案件来源（可以输入易赔订单号）" value="" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">图片</label>
         <div class="layui-input-block">
             <input type="hidden" name="path" id="path">
             <div class="layui-upload">
@@ -78,14 +128,7 @@
             </div>  
         </div>
     </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">状态</label>
-        <div class="layui-input-block">
-            <input type="radio" name="status" value="1" title="启用" checked="">
-            <input type="radio" name="status" value="2" title="禁用">
-            <input type="radio" name="status" value="3" title="已注销">
-        </div>
-    </div>
+
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
