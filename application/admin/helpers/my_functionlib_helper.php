@@ -335,6 +335,14 @@ if ( ! function_exists('match_string')) {
     }
 }
 
+function logs($data = null){
+	$file  = 'logs/log.txt';
+	$content = date('Y-m-d H:i:s')."\r\n".var_export($data,true)."\r\n";
+	file_put_contents($file,$content,FILE_APPEND);
+
+	return true;
+}
+
 
 /* End of file my_functionlib_helper.php */
 /* Location: ./application/admin/helpers/my_functionlib_helper.php */

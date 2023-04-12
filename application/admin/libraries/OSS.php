@@ -4,12 +4,11 @@
  *
  * @author mahon <maoxiancheng@uu139.com>
  */
-namespace App\Tools;
 
 use OSS\OssClient;
-use App\Bases\Time;
+// use App\Bases\Time;
 use OSS\Core\OssException;
-use App\Exceptions\Exception;
+// use App\Exceptions\Exception;
 
 /**
  * 阿里云文件存储
@@ -18,13 +17,23 @@ use App\Exceptions\Exception;
  *
  * @author mahon <maoxiancheng@uu139.com>
  */
-class OSS {
-    protected $config;
+class Oss {
+    protected $config = [
+        'keyId' => 'LTAI5tFg8pxdemHBUfxVBEDu',
+        'keySecret' => 'l305SVGeufnraLvkp9vQ8PjgqRiNNK',
+        'endpoint' => 'oss-cn-hangzhou.aliyuncs.com',
+        'develop' => [
+            'bucket' => 'md-library',
+            'domain' => 'https://md-library.oss-cn-hangzhou.aliyuncs.com'
+        ],
+        // 缩略图参数，拼接在原图后面
+        'thumb' => 'x-oss-process=style/thumb',
+    ];
     protected $client;
 
     public function __construct()
     {
-        $this->config = $this->getConfig();
+
     }
 
     /**
@@ -42,15 +51,8 @@ class OSS {
     {
         try {
             $this->client = $this->client();
-            //true-生产环境，false-开发环境
-            $apNs = env('OSS_APNS',false);
-            if ($apNs) {
-                $bucket = $this->config['product']['bucket'];
-                $domain = $this->config['product']['domain'];
-            } else {
-                $bucket = $this->config['develop']['bucket'];
-                $domain = $this->config['develop']['domain'];
-            }
+            $bucket = $this->config['develop']['bucket'];
+            $domain = $this->config['develop']['domain'];
             if ($path!=='') {
                 $path = rtrim($path, '/');
                 $this->client->createObjectDir($bucket, $path);
@@ -73,7 +75,7 @@ class OSS {
             return $rs;
 
         } catch (OssException $e) {
-            $this->log($e->getMessage());
+            logs($e->getMessage());
             throw new Exception(trans('tools.upload_error'));
         }
     }
@@ -90,13 +92,7 @@ class OSS {
     {
         try {
             $this->client = $this->client();
-            //true-生产环境，false-开发环境
-            $apNs = env('OSS_APNS',false);
-            if ($apNs) {
-                $bucket = $this->config['product']['bucket'];
-            } else {
-                $bucket = $this->config['develop']['bucket'];
-            }
+            $bucket = $this->config['develop']['bucket'];
             if ($path!=='') {
                 $path = rtrim($path, '/');
                 $path .= '/';
@@ -104,7 +100,7 @@ class OSS {
             $this->client->deleteObject($bucket, $path.$name);
             return true;
         } catch (OssException $e) {
-            $this->log($e->getMessage());
+            logs($e->getMessage());
             throw new Exception(trans('tools.del_error'));
         }
     }

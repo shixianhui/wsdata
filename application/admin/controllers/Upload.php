@@ -1,10 +1,12 @@
 <?php
-
+use App\Tools\Oss;
 class Upload extends CI_Controller {
 	private $_title = '文件上传';
 	private $_tool = '';
 	private $_thumbPath = '';
-	private $_imageSize = [];   
+	private $_imageSize = [];
+	//oss对象
+	// protected $oss;  
 	public function __construct() {
 		parent::__construct();
 		// $this->load->library('movietransformclass');
@@ -13,6 +15,8 @@ class Upload extends CI_Controller {
 		$this->load->helper(array('url', 'my_fileoperate'));
 
 		$this->_imageSize = get_image_size();
+        $this->load->library('oss');
+
 	}
 
 	public function index($model = 'news', $filePath = NULL) {
@@ -256,6 +260,70 @@ class Upload extends CI_Controller {
 			echo $this->upload->display_errors();
 		}
 	}
+
+	public function uploadImageOss()
+	{
+		$field = $this->input->post('field', TRUE);
+		$name = $_FILES['file']['name'];
+		$img = file_get_contents($_FILES['file']['tmp_name']);
+		$fileHash = md5($img);
+		// // 将图像字符串数据编码为base64
+		// $file_content = base64_encode($img);
+		// $img_base64 = 'data:' . $_FILES['file']['type'] . ';base64,' . $file_content;//合成图片的base64编码
+		$data = $this->oss->putFile($name,(string)$image,date('Ymd'));
+		//定义返回结果
+		$rs = [];
+		if (!empty($data)) {
+			$rs = [
+				'name'      => $fileName?:$name,
+				'mime_type' => $image->mime,
+				'size'      => $data['fileSize'],
+				'type'      => $this->config['type'],
+				'path'      => $data['url'],
+				'thumb'     => oss_thumb($data['url']),
+				'hash'      => $this->fileHash,
+				'source'    => $this->source
+			];
+		}
+
+	}
+
+	/**
+     * 图片上传到oss服务器
+     *
+     * @param Image  $image    图片对象
+     * @param string $fileName 图片名称
+     *
+     * @return array
+     * @throws Exception
+     */
+    private function putToOss($image,$fileName) {
+        try{
+            //图片后缀
+            $ext = (new MimeTypeExtensionGuesser)->guess($image->mime);
+            //待保存的图片名称
+            $name = $this->fileHash.'.'.$ext;
+            $data = $this->oss->putFile($name,(string)$image,date('Ymd'));
+            //定义返回结果
+            $rs = [];
+            if (!empty($data)) {
+                $rs = [
+                    'name'      => $fileName?:$name,
+                    'mime_type' => $image->mime,
+                    'size'      => $data['fileSize'],
+                    'type'      => $this->config['type'],
+                    'path'      => $data['url'],
+                    'thumb'     => oss_thumb($data['url']),
+                    'hash'      => $this->fileHash,
+                    'source'    => $this->source
+                ];
+            }
+            return $rs;
+
+        }catch (Exception $e) {
+            throw new Exception(trans('tools.upload_error'));
+        }
+    }
 
     public function uploadImage3() {
 		if ($_POST) {

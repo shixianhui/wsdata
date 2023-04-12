@@ -168,11 +168,11 @@
         //常规使用 - 普通图片上传
         var uploadInst = upload.render({
             elem: '#upload_image'
-            ,url: base_url+'admincp.php/upload/uploadImage2'
+            ,url: base_url+'admincp.php/upload/uploadImageOss'
             ,accept: 'images'
             ,data: {
                 model: 'user',
-                field: 'file'
+                field: 'file',
             }
             ,field: 'file'
             ,before: function(obj){
@@ -185,6 +185,12 @@
                 element.progress('progress', '0%'); //进度条复位
                 layer.msg('上传中', {icon: 16, time: 0});
             }
+            ,choose: function(obj) {
+                obj.preview(function(index, file, result){
+                    img_base64 = result; //图片链接（base64）
+                    console.log(img_base64)
+                });
+            }
             ,done: function(res){
                 if(res.success){
                     $('#image').attr('src', res.data.file_path.replace('.', '_thumb.')+"?"+res.data.field);
@@ -195,6 +201,7 @@
                 $('#errorText').html(''); //置空上传失败的状态
             }
             ,error: function(){
+                $('#upload_image').siblings('.progress').hide();
             //演示失败状态，并实现重传
             var errorText = $('#errorText');
             errorText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
