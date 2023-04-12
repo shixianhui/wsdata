@@ -31,6 +31,7 @@ class Attachment_model extends CI_Model {
 		$query = $this->db->get_where($this->_tableName, $strWhere);
 		if ($query->num_rows() > 0) {
 			$ret = $query->result_array();
+			return $ret[0];
 		}
 
 		return $ret;

@@ -264,9 +264,15 @@ class Upload extends CI_Controller {
 	public function uploadImageOss()
 	{
 		$field = $this->input->post('field', TRUE);
-		$name = $_FILES['file']['name'];
-		$img = file_get_contents($_FILES['file']['tmp_name']);
-		$fileHash = md5($img);
+		$fileName = $_FILES['file']['name'];
+		$url = $_FILES['file']['tmp_name'];
+		$image = file_get_contents($url);
+		$size = getimagesize($url);
+		if($size) 
+		$extension = image_type_to_extension($size[2]);
+		$fileHash = md5($image);
+		//待保存的图片名称
+		$name = $fileHash.$extension;
 		// // 将图像字符串数据编码为base64
 		// $file_content = base64_encode($img);
 		// $img_base64 = 'data:' . $_FILES['file']['type'] . ';base64,' . $file_content;//合成图片的base64编码
@@ -276,14 +282,17 @@ class Upload extends CI_Controller {
 		if (!empty($data)) {
 			$rs = [
 				'name'      => $fileName?:$name,
-				'mime_type' => $image->mime,
+				'mime_type' => $_FILES['file']['type'],
 				'size'      => $data['fileSize'],
-				'type'      => $this->config['type'],
+				'type'      => 'oss',
 				'path'      => $data['url'],
 				'thumb'     => oss_thumb($data['url']),
-				'hash'      => $this->fileHash,
-				'source'    => $this->source
+				'hash'      => $fileHash,
+				'source'    => 0
 			];
+			$ret_id = $this->Attachment_model->save($rs);
+
+			printAjaxData(['id' => $ret_id, 'file_path'=>$data['url'], 'file_path_thumb'=>oss_thumb($data['url'])]);
 		}
 
 	}

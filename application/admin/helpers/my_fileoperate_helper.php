@@ -191,5 +191,22 @@ if ( ! function_exists('createDirs')) {
 		}
 	}
 }
+
+if (!function_exists('oss_thumb')) {
+    /**
+     * 阿里OSS 图片缩略图地址
+     *
+     * @param string $url 原图地址
+     *
+     * @return string
+     */
+    function oss_thumb($url)
+    {
+        $op = strpos($url, '?') ? '&' : '?';
+        $thumb = $url.$op.'x-oss-process=style/thumb';
+
+        return $thumb;
+    }
+}
 /* End of file html_helper.php */
 /* Location: ./application/admin/helpers/My_firstletter.php */

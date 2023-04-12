@@ -54,6 +54,10 @@
         <div class="layui-input-inline" id="city_div">
             <select name="city" lay-verify="required" lay-reqtext="请选择地市" lay-search>
                 <option value="">请选择</option>
+                <?php if ($city_list) {
+                    foreach ($city_list as $value) { ?>
+                <option value="<?=$value['name']?>"><?=$value['name']?></option>
+                <?php }} ?>
             </select>
         </div>
     </div>
@@ -156,10 +160,10 @@
 
         var item_info = <?=$item_info_json?>;
 
-        // if (!$.isEmptyObject(item_info)) {
-        //     $('#image').attr('src', item_info.path.replace('.', '_thumb.'));
-        //     $('#image').attr('layer-src', item_info.path);
-        // }
+        if (!$.isEmptyObject(item_info)) {
+            $('#image').attr('src', item_info.path);
+            $('#image').attr('layer-src', item_info.path);
+        }
 
         layer.photos({
             photos: '#layer-photos'
@@ -193,8 +197,8 @@
             }
             ,done: function(res){
                 if(res.success){
-                    $('#image').attr('src', res.data.file_path.replace('.', '_thumb.')+"?"+res.data.field);
-                    $('#path').val(res.data.file_path);
+                    $('#image').attr('src', res.data.file_path_thumb);
+                    $('#path').val(res.data.id);
                     $('#upload_image').siblings('.progress').hide();
                     return layer.msg('上传成功');
                 }
@@ -240,7 +244,7 @@
             'price': item_info.price,
             'remark': item_info.remark,
             'source': item_info.source,
-            'img': item_info.img,
+            'path': item_info.img,
         });
 
         form.on('select(category)', function(data){

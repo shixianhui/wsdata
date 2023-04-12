@@ -88,9 +88,9 @@
                 {field: 'num', width: 80, title: '数量'},
                 {field: 'price', width: 120, title: '单价'},
                 {field: 'remark', width: 120, title: '备注'},
-                {field: 'img', width: 120, title: '图片', templet: function (d) {
-                    return '<div class="layui-upload-list layui-inline" id="layer-photos">'
-                    +'<img class="layui-upload-img" id="image" lay-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">'
+                {field: 'img', width: 120, height: 120, title: '图片', templet: function (d) {
+                    return '<div class="layui-upload-list layui-inline layer-photos" id="layer-photos">'
+                    +'<img class="layui-upload-img" id="image" lay-src="'+d.path+'" src="'+d.thumb+'" style="width: 100px;">'
                     +'</div>'
                 }},
                 {field: 'source', width: 120, title: '案件来源'},
@@ -197,7 +197,7 @@
         });
 
         layer.photos({
-            photos: '#layer-photos'
+            photos: '.layer-photos'
             ,anim: 5 //0-6的选择，指定弹出图片动画类型
         }); 
 
