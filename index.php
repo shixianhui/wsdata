@@ -115,7 +115,7 @@ switch (ENVIRONMENT)
  *
  * NO TRAILING SLASH!
  */
-	$application_folder = 'application/client';
+	$application_folder = 'application/admin';
 
 /*
  *---------------------------------------------------------------
@@ -313,4 +313,5 @@ switch (ENVIRONMENT)
  *
  * And away we go...
  */
+require_once './vendor/autoload.php';
 require_once BASEPATH.'core/CodeIgniter.php';
