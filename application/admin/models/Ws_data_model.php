@@ -93,7 +93,7 @@ class Ws_data_model extends CI_Model {
 		$this->db->select($select);
 		$this->db->join('category as a', "a.id = {$this->_tableName}.category", 'left');
 		$this->db->join('category as b', "b.id = {$this->_tableName}.category_1", 'left');
-		$this->db->join('category as c', "b.id = {$this->_tableName}.category_2", 'left');
+		$this->db->join('category as c', "c.id = {$this->_tableName}.category_2", 'left');
         if ($sort_order) {
             $this->db->order_by("sort", $sort_order);
         }
@@ -111,7 +111,7 @@ class Ws_data_model extends CI_Model {
         $this->db->select("count(*) as 'count'");
         $this->db->join('category as a', "a.id = {$this->_tableName}.category", 'left');
 		$this->db->join('category as b', "b.id = {$this->_tableName}.category_1", 'left');
-		$this->db->join('category as c', "b.id = {$this->_tableName}.category_2", 'left');
+		$this->db->join('category as c', "c.id = {$this->_tableName}.category_2", 'left');
         $query = $this->db->get_where($this->_tableName, $strWhere);
         if ($query->num_rows() > 0) {
             $ret = $query->result_array();

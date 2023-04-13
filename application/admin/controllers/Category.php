@@ -27,15 +27,16 @@ class Category extends CI_Controller {
         $strWhere = $this->session->userdata('search')?$this->session->userdata('search'):$condition;
 	    if ($_POST) {
 			$strWhere = $condition;
-			$title = $this->input->post('title');
+			$keyword = $this->input->post('keyword');
+			$parent_id = $this->input->post('parent_id');
 			$display = $this->input->post('display');
 		    $startTime = $this->input->post('inputdate_start');
 		    $endTime = $this->input->post('inputdate_end');
 		    if (! empty($title) ) {
-		        $strWhere .= " and {$this->_table}.title REGEXP '{$title}'";
+		        $strWhere .= " and {$this->_table}.name REGEXP '{$title}'";
 		    }
-		    if ($display != "") {
-		        $strWhere .= " and {$this->_table}.display = {$display} ";
+		    if ($parent_id != "") {
+		        $strWhere .= " and {$this->_table}.parent_id = {$parent_id} ";
 		    }
 		    // if (! empty($startTime) && ! empty($endTime)) {
 		    // 	$strWhere .= " and {$this->_table}.add_time > ".strtotime($startTime.' 00:00:00')." and {$this->_table}.add_time < ".strtotime($endTime." 23:59:59")." ";
@@ -58,11 +59,25 @@ class Category extends CI_Controller {
         $pagination = $this->pagination->create_links();
 
 		$item_list = $this->tableObject->gets('*', $strWhere, $paginationConfig['per_page'], $page);
+		foreach ($item_list as $key=>$value) {
+			$parent_name = '';
+			if ($value['parent_id']) {
+				$parent_name = $this->tableObject->ancestry($value['parent_id']);
+			}
+			$item_list[$key]['parent_name'] = $parent_name;
+		}
+
+
+		$datas = $this->tableObject->gets('*', NULL, NULL, NULL, 'id', 'ASC');
+		$menus_list = $this->tableObject->generateTree($datas);
 
 		$data = array(
 		        'tool'=>$this->_tool,
 		        'table'=>$this->_table,
-		        'item_list'=>$item_list,
+		        'template'=>$this->_table,
+		        'item_list'=>json_encode($item_list),
+				'table_limit' => $paginationConfig['per_page'],
+	            'menus_list'=>json_encode($menus_list),
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
                 'pageCount'=>ceil($paginationCount/$paginationConfig['per_page']),
@@ -84,17 +99,11 @@ class Category extends CI_Controller {
 		$prfUrl = $this->session->userdata("{$this->_controller}RefUrl")?:base_url()."admincp.php/{$this->_controller}/index";
         $item_info = $id ? $this->tableObject->get('*', array("id"=>$id)) : [];
         if ($_POST) {
-            $title = $this->input->post('title', TRUE);
-            $abstract = $this->input->post('abstract', TRUE);
-            $path = $this->input->post('path', TRUE);
-            $content = unhtml($this->input->post('content', TRUE));
-            $create_time = $this->input->post('create_time', TRUE);
+            $name = $this->input->post('name', TRUE);
+            $parent_id = $this->input->post('parent_id', TRUE);
             $fields = array(
-                'title' => $title,
-                'path' => $path,
-                'abstract' => $abstract,
-                'content' => $content,
-                'create_time' => $create_time,
+                'name' => $name,
+                'parent_id' => $parent_id,
                 
             );
             $ret = $this->tableObject->save($fields, $id ? array('id' => $id) : NULL);
@@ -105,10 +114,18 @@ class Category extends CI_Controller {
             }
         }
 
+		if ($item_info) {
+			$item_info['parent_menu'] = $this->tableObject->get('*', ['id'=>$item_info['parent_id']])['name'];
+		}
+
+		$datas = $this->tableObject->gets('*', NULL, NULL, NULL, 'id', 'ASC');
+		$menus_list = $this->tableObject->generateTree($datas);
 
 	    $data = array(
 		        'tool'=>$this->_tool,
 	            'item_info'=>$item_info,
+	            'item_info_json'=>json_encode($item_info),
+	            'menus_list'=>json_encode($menus_list),
 	    		'table'=>$this->_table,
 	            'prfUrl'=>$prfUrl
 		        );

@@ -5,15 +5,16 @@
 </style>
 <div class="layui-form layuimini-form" lay-filter="saveForm">
     <div class="layui-form-item">
-        <label class="layui-form-label required">管理组名称</label>
-        <div class="layui-input-block">
-            <input type="text" name="group_name" lay-verify="required" lay-reqtext="管理组名称不能为空" placeholder="请输入管理组名称" value="" class="layui-input">
+        <label class="layui-form-label">上级分类</label>
+        <div class="layui-input-block" style="width: 20%;">
+            <input disabled type="text" name="parent_menu" placeholder="请选择上级分类" value="" class="layui-input" id="menuSelect">
+            <input type="hidden" name="parent_id" id="parent_id">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label required">权限列表</label>
+        <label class="layui-form-label required">分类名称</label>
         <div class="layui-input-block">
-            <div id="menuTree"></div>
+            <input type="text" name="name" lay-verify="required" lay-reqtext="分类名称不能为空" placeholder="请输入分类名称" value="" class="layui-input">
         </div>
     </div>
 
@@ -26,52 +27,39 @@
 <script src="js/admin/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="js/admin/lay-config.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'common'], function () {
+    layui.use(['form', 'common', 'customSelect'], function () {
         var form = layui.form,
             layer = layui.layer,
             common = layui.common,
+            customSelect = layui.customSelect,
             $ = layui.$;
 
         var item_info = <?=$item_info_json?>;
         var menus_list = <?=$menus_list?>;
-        var tree = layui.tree;
    
-        //渲染
-        tree.render({
-            elem: '#menuTree',  //绑定元素
+        customSelect.render({
+            el: 'menuSelect',
             data: menus_list,
-            showCheckbox: true,
-            id: 'id',
-            oncheck: function(obj){
-                var data = obj.data;  //获取当前点击的节点数据
+            type: 'radio',
+            line: false,
+            checked: function (obj) {
+                console.log(obj.obj.data)
+                $('#parent_id').val(obj.obj.data.id);
             }
-        });
+        })
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var checkedData = tree.getChecked('id'); //获取选中节点的数据
-            var fields = {}
-            fields.group_name = data.field.group_name
-            fields.permissions_arr = JSON.stringify(checkedData)
             let url = '<?php echo $_SERVER['REQUEST_URI']; ?>';
-            common.asyncDoRequest(url, fields);
+            common.asyncDoRequest(url, data.field);
             return false;
         });
 
         //表单赋值
         form.val("saveForm", {
-            'group_name': item_info.group_name
+            'name': item_info.name,
+            "parent_id": item_info.parent_id,
+            "parent_menu": item_info.parent_menu,
         });
-
-        if (item_info.permission_ids){
-            console.log(item_info.permission_ids)
-            var dataStr = item_info.permission_ids;
-            var dataStrArr=dataStr.split(",");
-            var dataIntArr=[];
-            dataStrArr.forEach(function(data,index,arr){
-                dataIntArr.push(data);
-            });
-            tree.setChecked('id', dataIntArr);
-        }
 
     });
 </script>

@@ -51,6 +51,7 @@ class Home extends CI_Controller {
 	{
 		if ($controller) {
 			$this->session->unset_userdata($controller."_search");
+			$this->session->unset_userdata("search");
 		}
 
 		echo json_encode(['code'=>1, 'msg'=>'服务端清理缓存成功']);

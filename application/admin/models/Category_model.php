@@ -87,6 +87,43 @@ class Category_model extends CI_Model {
 
         return $count;
     }
+
+    public function ancestry($pid) {
+        $data = $this->gets();
+        $ancestry = array();
+
+        while($pid > 0) {
+            foreach($data as $v) {
+                if($v['id'] == $pid) {
+                    $ancestry[] = $v['name'];
+                    $pid = $v['parent_id'];
+                }
+            }
+        }
+
+        $ancestry_ids = $ancestry ? implode(',',array_reverse($ancestry)) : '';
+        return $ancestry_ids;
+    }
+
+        //引用算法树状数据
+        public function generateTree($array){
+            //第一步 构造数据
+            $items = array();
+            foreach($array as $value){
+                $items[$value['id']] = $value;
+            }
+            //第二部 遍历数据 生成树状结构
+            $tree = array();
+            foreach($items as $key => $value){
+                if(isset($items[$value['parent_id']])){
+                    //注意 这里传递的是引用
+                    $items[$value['parent_id']]['children'][] = &$items[$key];
+                }else{
+                    $tree[] = &$items[$key];
+                }
+            }
+            return $tree;
+        }
 }
 /* End of file advertising_model.php */
 /* Location: ./application/admin/models/advertising_model.php */

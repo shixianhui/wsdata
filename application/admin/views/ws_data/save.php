@@ -17,9 +17,9 @@
         </div>
     </div>
     <div class="layui-form-item" id="category_1_div">
-        <label class="layui-form-label required">细分类别1</label>
+        <label class="layui-form-label">细分类别1</label>
         <div class="layui-input-inline">
-            <select name="category_1" lay-reqtext="请选择细分类别1" lay-search>
+            <select name="category_1" lay-reqtext="请选择细分类别1" lay-search lay-filter="category_1">
                 <option value="">请选择</option>
                 <?php if ($category_1_list) {
                     foreach ($category_1_list as $value) { ?>
@@ -29,21 +29,21 @@
         </div>
     </div>
     <div class="layui-form-item" id="category_2_div">
-        <label class="layui-form-label required">细分类别2</label>
+        <label class="layui-form-label">细分类别2</label>
         <div class="layui-input-inline">
             <select name="category_2" lay-reqtext="请选择细分类别2" lay-search>
                 <option value="">请选择</option>
-                <?php if ($category_1_list) {
-                    foreach ($category_1_list as $value) { ?>
+                <?php if ($category_2_list) {
+                    foreach ($category_2_list as $value) { ?>
                 <option value="<?=$value['id']?>"><?=$value['name']?></option>
                 <?php }} ?>
             </select>
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label required">省份</label>
+        <label class="layui-form-label">省份</label>
         <div class="layui-input-inline">
-            <select name="province" lay-verify="required" lay-reqtext="请选择省份" lay-search lay-filter="province">
+            <select name="province" lay-search lay-filter="province">
                 <option value="">请选择</option>
                 <?php if ($province_list) {
                     foreach ($province_list as $value) { ?>
@@ -52,7 +52,7 @@
             </select>
         </div>
         <div class="layui-input-inline" id="city_div">
-            <select name="city" lay-verify="required" lay-reqtext="请选择地市" lay-search>
+            <select name="city" lay-search>
                 <option value="">请选择</option>
                 <?php if ($city_list) {
                     foreach ($city_list as $value) { ?>
@@ -149,6 +149,11 @@
     <option value="{{ item.name }}">{{ item.name }}</option>
     {{#  }); }}
 </script>
+<script id="photos" type="text/html">
+    {{#  layui.each(d.list, function(index, item){ }}
+        <img class="layui-upload-img" id="image" lay-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 100px;height:100px">
+    {{#  }); }}
+</script>
 <script>
     layui.use(['common'], function () {
         var form = layui.form,
@@ -159,10 +164,18 @@
             $ = layui.$;
 
         var item_info = <?=$item_info_json?>;
+        var photos_list = [];
 
         if (!$.isEmptyObject(item_info)) {
-            $('#image').attr('src', item_info.path);
-            $('#image').attr('layer-src', item_info.path);
+            // $('#image').attr('src', item_info.path);
+            // $('#image').attr('layer-src', item_info.path);
+            var data = { //数据
+                "list": item_info.photos_list
+            }
+            var getTpl = photos.innerHTML;
+            laytpl(getTpl).render(data, function(html){
+                $('#layer-photos').html(html)
+            });
         }
 
         layer.photos({
@@ -174,6 +187,7 @@
             elem: '#upload_image'
             ,url: base_url+'admincp.php/upload/uploadImageOss'
             ,accept: 'images'
+            ,multiple: true
             ,data: {
                 model: 'user',
                 field: 'file',
@@ -190,15 +204,29 @@
                 layer.msg('上传中', {icon: 16, time: 0});
             }
             ,choose: function(obj) {
-                obj.preview(function(index, file, result){
-                    img_base64 = result; //图片链接（base64）
-                    console.log(img_base64)
-                });
+                // obj.preview(function(index, file, result){
+                //     img_base64 = result; //图片链接（base64）
+                //     console.log(img_base64)
+                // });
             }
             ,done: function(res){
                 if(res.success){
-                    $('#image').attr('src', res.data.file_path_thumb);
-                    $('#path').val(res.data.id);
+                    // $('#image').attr('src', res.data.file_path_thumb);
+                    // $('#path').val(res.data.id);
+                    let path = '';
+                    photos_list.push(res.data)
+                    photos_list.forEach(item => {
+                        path += item.id+','
+                    })
+                    path = path.slice(0, -1)
+                    $('#path').val(path);
+                    var data = { //数据
+                        "list": photos_list
+                    }
+                    var getTpl = photos.innerHTML;
+                    laytpl(getTpl).render(data, function(html){
+                        $('#layer-photos').html(html)
+                    });
                     $('#upload_image').siblings('.progress').hide();
                     return layer.msg('上传成功');
                 }
@@ -258,6 +286,27 @@
                         var getTpl = category.innerHTML;
                         laytpl(getTpl).render(data, function(html){
                             $('#category_1_div select').html(html)
+                            form.render('select');
+                        });
+						return false;
+					}else{
+						layer.msg(res.message);
+						return false;
+					}
+                },
+                "json"
+            )
+        }); 
+        form.on('select(category_1)', function(data){
+            let id = data.value
+            $.get('admincp.php/ws_data/getCategory/'+id,
+                function(res){
+                    if(res.success){
+                        var data = { //数据
+                            "list": res.data.item_list
+                        }
+                        var getTpl = category.innerHTML;
+                        laytpl(getTpl).render(data, function(html){
                             $('#category_2_div select').html(html)
                             form.render('select');
                         });

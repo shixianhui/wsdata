@@ -11,16 +11,23 @@
                                 <input type="text" name="keyword" autocomplete="off" class="layui-input">
                             </div>
                         </div>
-                        <div class="layui-inline">
+                        <!-- <div class="layui-inline">
                             <label class="layui-form-label">物损大类</label>
                             <div class="layui-input-inline">
                                 <select name="category" lay-search>
                                     <option value="">请选择</option>
-                                    <?php if ($category_list) {
+                                    <?php if (isset($category_list)) {
                                         foreach ($category_list as $value) { ?>
                                     <option value="<?=$value['id']?>"><?=$value['name']?></option>
                                     <?php }} ?>
                                 </select>
+                            </div>
+                        </div> -->
+                        <div class="layui-inline">
+                            <label class="layui-form-label">所属分类</label>
+                            <div class="layui-input-inline">
+                                <input disabled type="text" name="parent_menu" placeholder="请选择分类" value="" class="layui-input" id="menuSelect">
+                                <input type="hidden" name="parent_id" id="parent_id">
                             </div>
                         </div>
 
@@ -57,17 +64,47 @@
         已注销
     {{# } }}
 </script>
+<script id="photos" type="text/html">
+    <div class="layui-upload-list layui-inline layer-photos" id="layer-photos">
+    {{#  layui.each(d.photos_list, function(index, item){ }}
+        <img class="layui-upload-img" id="image" lay-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 50px;height:50px">
+    {{#  }); }}
+    </div>
+</script>
 <script src="js/admin/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
 <script src="js/admin/lay-config.js" charset="utf-8"></script>
+<style>
+    .layui-form-selected .layui-anim-upbit {
+        z-index: 999 !important;
+    }
+    .layui-table-cell {
+        height: auto;
+    }
+</style>
 <script>
-    layui.use(['table', 'common'], function () {
+    layui.use(['table', 'common', 'customSelect'], function () {
         var $ = layui.jquery,
             table = layui.table,
             common = layui.common,
+            customSelect = layui.customSelect,
             form = layui.form;
 
         var table_data = <?=$item_list?>;
         var table_limit = <?=$table_limit?>;
+        var menus_list = <?=$menus_list?>;
+
+        
+        customSelect.render({
+            el: 'menuSelect',
+            data: menus_list,
+            type: 'radio',
+            line: false,
+            checked: function (obj) {
+                console.log(obj.obj.data)
+                $('#parent_id').val(obj.obj.data.id);
+            }
+        })
+
         table.render({
             elem: '#currentTableId',
             data: table_data,
@@ -88,17 +125,25 @@
                 {field: 'num', width: 80, title: '数量'},
                 {field: 'price', width: 120, title: '单价'},
                 {field: 'remark', width: 120, title: '备注'},
-                {field: 'img', width: 120, height: 120, title: '图片', templet: function (d) {
-                    return '<div class="layui-upload-list layui-inline layer-photos" id="layer-photos">'
-                    +'<img class="layui-upload-img" id="image" lay-src="'+d.path+'" src="'+d.thumb+'" style="width: 100px;">'
-                    +'</div>'
-                }},
+                // {field: 'img', width: 120, title: '图片', templet: function (d) {
+                //     return '<div class="layui-upload-list layui-inline layer-photos" id="layer-photos">'
+                //     +'<img class="layui-upload-img" id="image" lay-src="'+d.path+'" src="'+d.thumb+'" style="width: 100px;">'
+                //     +'</div>'
+                // }},
+                {field: 'img', width: 120, title: '图片', templet: '#photos'},
                 {field: 'source', width: 120, title: '案件来源'},
                 // {field: 'status', width: 100, title: '状态', templet: '#statusTpl', unresize: true},
                 // {field: 'create_time', width: 180, title: '添加时间'},
-                {title: '操作', width: 150, toolbar: '#currentTableBar', align: "center"}
+                {title: '操作', width: 150, toolbar: '#currentTableBar', align: "center", fixed: "right"}
             ]],
-            limit:table_limit
+            limit:table_limit,
+            height: 'full-190',
+            done: function (res, curr, count) {
+                // 该方法用于解决,使用fixed固定列后,行高和其他列不一致的问题
+                $(".layui-table-main  tr").each(function (index, val) {
+                    $($(".layui-table-fixed .layui-table-body tbody tr")[index]).height($(val).height());
+                });
+            },
         });
 
 

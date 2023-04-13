@@ -69,7 +69,7 @@ class Ws_data extends CI_Controller {
 	    if ($_POST) {
 			$strWhere = $condition;
 			$keyword = $this->input->post('keyword');
-			$category = $this->input->post('category');
+			$category = $this->input->post('parent_id');
 			$display = $this->input->post('display');
 		    $startTime = $this->input->post('inputdate_start');
 		    $endTime = $this->input->post('inputdate_end');
@@ -80,7 +80,7 @@ class Ws_data extends CI_Controller {
 		        $strWhere .= " and {$this->_table}.display = {$display} ";
 		    }
 			if ($category) {
-		        $strWhere .= " and {$this->_table}.category = {$category} ";
+		        $strWhere .= " and ({$this->_table}.category = {$category} or {$this->_table}.category_1 = {$category} or {$this->_table}.category_2 = {$category}) ";
 			}
 		    // if (! empty($startTime) && ! empty($endTime)) {
 		    // 	$strWhere .= " and {$this->_table}.add_time > ".strtotime($startTime.' 00:00:00')." and {$this->_table}.add_time < ".strtotime($endTime." 23:59:59")." ";
@@ -104,19 +104,24 @@ class Ws_data extends CI_Controller {
 
 		$item_list = $this->tableObject->gets_join_category('ws_data.*, a.name as category, b.name as category_1, c.name as category_2', $strWhere, $paginationConfig['per_page'], $page);
 		foreach ($item_list as $key=>$value) {
-			$path = '';
-			$thumb = '';
+			// $path = '';
+			// $thumb = '';
+			$photos_list = [];
 			if ($value['img']) {
-				$img_info = $this->Attachment_model->get('id,path,thumb', ['id'=>$value['img']]);
-				$path = $img_info ? $img_info['path'] : '';
-				$thumb = $img_info ? $img_info['thumb'] : '';
+				$photos_list = $this->Attachment_model->gets('id,path,thumb', "id in ({$value['img']})");
+
+				// $img_info = $this->Attachment_model->get('id,path,thumb', ['id'=>$value['img']]);
+				// $path = $img_info ? $img_info['path'] : '';
+				// $thumb = $img_info ? $img_info['thumb'] : '';
 			}
-			$item_list[$key]['path'] = $path;
-			$item_list[$key]['thumb'] = $thumb;
+			// $item_list[$key]['path'] = $path;
+			// $item_list[$key]['thumb'] = $thumb;
+			$item_list[$key]['photos_list'] = $photos_list;
 		}
 
 		$province_list = $this->Area_model->gets('id,name', ['parent_id'=>0]);
-		$category_list = $this->Category_model->gets('id,name', ['parent_id'=>0]);
+		$datas = $this->Category_model->gets('*', NULL, NULL, NULL, 'id', 'ASC');
+		$menus_list = $this->Category_model->generateTree($datas);
 
 
 		$data = array(
@@ -124,7 +129,7 @@ class Ws_data extends CI_Controller {
 		        'table'=>$this->_table,
 		        'template'=>$this->_table,
 		        'item_list'=>json_encode($item_list),
-		        'category_list'=>$category_list,
+		        'menus_list'=>json_encode($menus_list),
 				'table_limit' => $paginationConfig['per_page'],
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
@@ -174,17 +179,23 @@ class Ws_data extends CI_Controller {
 		$category_list = $this->Category_model->gets('id,name', ['parent_id'=>0]);
 		$province_list = $this->Area_model->gets('id,name', ['parent_id'=>0]);
 		$category_1_list = [];
+		$category_2_list = [];
 		$city_list = [];
+		$photos_list = [];
 		if ($item_info) {
 			$item_info['thumb'] = '';
 			$item_info['path'] = '';
 			if ($item_info['category']) {
 				$category_1_list = $this->Category_model->gets('id,name', ['parent_id'=>$item_info['category']]);
 			}
+			if ($item_info['category_1']) {
+				$category_2_list = $this->Category_model->gets('id,name', ['parent_id'=>$item_info['category_1']]);
+			}
 			if ($item_info['img']) {
-				$img_info = $this->Attachment_model->get('id,path,thumb', ['id'=>$item_info['img']]);
-				$item_info['thumb'] = $img_info ? $img_info['thumb'] : '';
-				$item_info['path'] = $img_info ? $img_info['path'] : '';
+				// $img_info = $this->Attachment_model->get('id,path,thumb', ['id'=>$item_info['img']]);
+				// $item_info['thumb'] = $img_info ? $img_info['thumb'] : '';
+				// $item_info['path'] = $img_info ? $img_info['path'] : '';
+				$photos_list = $this->Attachment_model->gets('id,path,thumb', "id in ({$item_info['img']})");
 			}
 			if ($item_info['province']) {
 				$area_info = $this->Area_model->get('id,name', "name regexp '{$item_info['province']}'");
@@ -192,6 +203,7 @@ class Ws_data extends CI_Controller {
 					$city_list = $this->Area_model->gets('id,name', ['parent_id'=>$area_info['id']]);
 				}
 			}
+			$item_info['photos_list'] = $photos_list;
 		}
 
 	    $data = array(
@@ -203,6 +215,7 @@ class Ws_data extends CI_Controller {
 		        'category_list'=>$category_list,
 		        'province_list'=>$province_list,
 		        'category_1_list'=>$category_1_list,
+		        'category_2_list'=>$category_2_list,
 		        'city_list'=>$city_list,
 		        );
 		$layout = array(

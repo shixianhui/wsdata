@@ -292,7 +292,7 @@ class Upload extends CI_Controller {
 			];
 			$ret_id = $this->Attachment_model->save($rs);
 
-			printAjaxData(['id' => $ret_id, 'file_path'=>$data['url'], 'file_path_thumb'=>oss_thumb($data['url'])]);
+			printAjaxData(['id' => $ret_id, 'path'=>$data['url'], 'thumb'=>oss_thumb($data['url'])]);
 		}
 
 	}
