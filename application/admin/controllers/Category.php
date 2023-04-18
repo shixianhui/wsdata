@@ -38,7 +38,7 @@ class Category extends CI_Controller {
 		        $strWhere .= " and {$this->_table}.name REGEXP '{$keyword}'";
 				$this->session->set_userdata('keyword', $keyword);
 		    }
-		    if ($parent_id != "") {
+		    if ($parent_id) {
 		        $strWhere .= " and {$this->_table}.parent_id = {$parent_id} ";
 				$this->session->set_userdata('category', $parent_id);
 		    }
@@ -49,7 +49,6 @@ class Category extends CI_Controller {
 		    	$strWhere .= " and {$this->_table}.create_time > '".$startTime." 00:00:00' and {$this->_table}.create_time < '".$endTime." 23:59:59'";
 		    }
             $this->session->set_userdata('search', $strWhere);
-            $page = 0;
 		}
 
         //分页

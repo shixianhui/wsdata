@@ -157,9 +157,26 @@
 </script>
 <script id="photos" type="text/html">
     {{#  layui.each(d.list, function(index, item){ }}
+    <div class="layui-inline img-div">
         <img class="layui-upload-img" id="image" layer-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 100px;height:100px">
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" data-id="{{ item.id }}">
+            <i class="layui-icon">&#xe640;</i>
+        </button>
+
+    </div>
     {{#  }); }}
 </script>
+<style>
+    .img-div .layui-btn-danger {
+        position:absolute;
+        top:0;
+        right:0;
+        display:none;
+    }
+    .img-div:hover .layui-btn-danger {
+        display: block;
+    }
+</style>
 <script>
     layui.use(['common'], function () {
         var form = layui.form,
@@ -170,7 +187,7 @@
             $ = layui.$;
 
         var item_info = <?=$item_info_json?>;
-        var photos_list = [];
+        var photos_list = item_info.photos_list || [];
 
         if (!$.isEmptyObject(item_info)) {
             // $('#image').attr('src', item_info.path);
@@ -219,7 +236,7 @@
                 if(res.success){
                     // $('#image').attr('src', res.data.file_path_thumb);
                     // $('#path').val(res.data.id);
-                    let path = '';
+                    let path = [];
                     photos_list.push(res.data)
                     photos_list.forEach(item => {
                         path += item.id+','
@@ -255,6 +272,28 @@
             }
             }
         });
+
+        //删除图片
+        // $('.layui-btn-danger').click(function(){
+        //     console.log(1)
+        //     let id = $(this).attr('data-id')
+        //     let path = $('#path').val();
+        //     let path_arr = path.split(',')
+        //     path_arr = path_arr.filter(item => item != id)
+        //     $('#path').val(path_arr.join(','));
+
+        //     $(this).parent('.img-div').remove()
+        // });
+        $(document).on("click",".layui-btn-danger",function(){
+            let id = $(this).attr('data-id')
+            let path = $('#path').val();
+            let path_arr = path.split(',')
+            path_arr = path_arr.filter(item => item != id)
+            $('#path').val(path_arr.join(','));
+            photos_list = photos_list.filter(item => item.id != id)
+
+            $(this).parent('.img-div').remove()
+        })
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
