@@ -3,7 +3,7 @@
         <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" method="post" action="admincp.php/<?=$template?>">
+                <form class="layui-form layui-form-pane" method="post" action="admincp.php/<?=$template?>" lay-filter="filterForm">
                     <div class="layui-form-item">
                         <div class="layui-inline">
                             <label class="layui-form-label">关键词</label>
@@ -21,6 +21,7 @@
 
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary" id="reset_search">重置</button>
                         </div>
                     </div>
                 </form>
@@ -62,6 +63,7 @@
         var table_data = <?=$item_list?>;
         var table_limit = <?=$table_limit?>;
         var menus_list = <?=$menus_list?>;
+        var filter = <?=$filter?>;
 
 
         customSelect.render({
@@ -178,6 +180,14 @@
                 });
             }
         });
+        form.val('filterForm', {
+            parent_id: filter.category,
+            parent_menu: filter.category_name,
+            keyword: filter.keyword
+        });
+        $('#reset_search').click(function() {
+            $('#parent_id').val('');
+        })
 
     });
 </script>

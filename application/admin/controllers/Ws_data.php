@@ -25,6 +25,8 @@ class Ws_data extends CI_Controller {
         if ($clear) {
             $clear = 0;
             $this->session->unset_userdata('search');
+            $this->session->unset_userdata('category');
+            $this->session->unset_userdata('keyword');
         }
         $this->session->set_userdata(array("{$this->_controller}RefUrl"=>base_url().'admincp.php/'.uri_string()));
         $condition = "{$this->_table}.id > 0";
@@ -75,12 +77,14 @@ class Ws_data extends CI_Controller {
 		    $endTime = $this->input->post('inputdate_end');
 		    if (! empty($keyword) ) {
 		        $strWhere .= " and ({$this->_table}.brand REGEXP '{$keyword}' or a.name REGEXP '{$keyword}' or b.name REGEXP '{$keyword}' or c.name REGEXP '{$keyword}')";
+				$this->session->set_userdata('keyword', $keyword);
 		    }
 		    if ($display != "") {
 		        $strWhere .= " and {$this->_table}.display = {$display} ";
 		    }
 			if ($category) {
 		        $strWhere .= " and ({$this->_table}.category = {$category} or {$this->_table}.category_1 = {$category} or {$this->_table}.category_2 = {$category}) ";
+				$this->session->set_userdata('category', $category);
 			}
 		    // if (! empty($startTime) && ! empty($endTime)) {
 		    // 	$strWhere .= " and {$this->_table}.add_time > ".strtotime($startTime.' 00:00:00')." and {$this->_table}.add_time < ".strtotime($endTime." 23:59:59")." ";
@@ -89,8 +93,8 @@ class Ws_data extends CI_Controller {
 		    	$strWhere .= " and {$this->_table}.create_time > '".$startTime." 00:00:00' and {$this->_table}.create_time < '".$endTime." 23:59:59'";
 		    }
             $this->session->set_userdata('search', $strWhere);
-            $page = 0;
 		}
+
 
         //分页
         $this->config->load('pagination_config', TRUE);
@@ -123,6 +127,16 @@ class Ws_data extends CI_Controller {
 		$datas = $this->Category_model->gets('*', NULL, NULL, NULL, 'id', 'ASC');
 		$menus_list = $this->Category_model->generateTree($datas);
 
+		//筛选条件
+		$category_name = '';
+		$category = $this->session->userdata('category') ?: 0;
+		if ($category) {
+			$category_info = $this->Category_model->get('*', ['id'=>$category]);
+			$category_name = $category_info ? $category_info['name'] : '';
+		}
+		$keyword = $this->session->userdata('keyword') ?: '';
+
+		$filter = compact('category', 'category_name', 'keyword');
 
 		$data = array(
 		        'tool'=>$this->_tool,
@@ -134,6 +148,7 @@ class Ws_data extends CI_Controller {
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
                 'pageCount'=>ceil($paginationCount/$paginationConfig['per_page']),
+				'filter' => json_encode($filter)
 		        );
 	    $layout = array(
 			      'title'=>$this->_title,
@@ -153,6 +168,7 @@ class Ws_data extends CI_Controller {
         $item_info = $id ? $this->tableObject->get('*', array("id"=>$id)) : [];
         if ($_POST) {
             $fields = array(
+                'no' => $this->input->post('no', TRUE),
                 'category' => $this->input->post('category', TRUE),
                 'category_1' => $this->input->post('category_1', TRUE),
                 'category_2' => $this->input->post('category_2', TRUE),
@@ -170,7 +186,7 @@ class Ws_data extends CI_Controller {
             );
             $ret = $this->tableObject->save($fields, $id ? array('id' => $id) : NULL);
             if ($ret) {
-                printAjaxSuccess($prfUrl);
+                printAjaxSuccess('close_layer','保存成功');
             } else {
                 printAjaxError('fail',"操作失败！");
             }

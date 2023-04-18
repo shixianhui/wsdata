@@ -21,6 +21,8 @@ class Category extends CI_Controller {
         if ($clear) {
             $clear = 0;
             $this->session->unset_userdata('search');
+			$this->session->unset_userdata('category');
+            $this->session->unset_userdata('keyword');
         }
         $this->session->set_userdata(array("{$this->_controller}RefUrl"=>base_url().'admincp.php/'.uri_string()));
         $condition = "{$this->_table}.id > 0";
@@ -32,11 +34,13 @@ class Category extends CI_Controller {
 			$display = $this->input->post('display');
 		    $startTime = $this->input->post('inputdate_start');
 		    $endTime = $this->input->post('inputdate_end');
-		    if (! empty($title) ) {
-		        $strWhere .= " and {$this->_table}.name REGEXP '{$title}'";
+		    if (! empty($keyword) ) {
+		        $strWhere .= " and {$this->_table}.name REGEXP '{$keyword}'";
+				$this->session->set_userdata('keyword', $keyword);
 		    }
 		    if ($parent_id != "") {
 		        $strWhere .= " and {$this->_table}.parent_id = {$parent_id} ";
+				$this->session->set_userdata('category', $parent_id);
 		    }
 		    // if (! empty($startTime) && ! empty($endTime)) {
 		    // 	$strWhere .= " and {$this->_table}.add_time > ".strtotime($startTime.' 00:00:00')." and {$this->_table}.add_time < ".strtotime($endTime." 23:59:59")." ";
@@ -67,9 +71,19 @@ class Category extends CI_Controller {
 			$item_list[$key]['parent_name'] = $parent_name;
 		}
 
-
 		$datas = $this->tableObject->gets('*', NULL, NULL, NULL, 'id', 'ASC');
 		$menus_list = $this->tableObject->generateTree($datas);
+
+		//筛选条件
+		$category_name = '';
+		$category = $this->session->userdata('category') ?: 0;
+		if ($category) {
+			$category_info = $this->tableObject->get('*', ['id'=>$category]);
+			$category_name = $category_info ? $category_info['name'] : '';
+		}
+		$keyword = $this->session->userdata('keyword') ?: '';
+
+		$filter = compact('category', 'category_name', 'keyword');
 
 		$data = array(
 		        'tool'=>$this->_tool,
@@ -81,6 +95,7 @@ class Category extends CI_Controller {
                 'pagination'=>$pagination,
                 'paginationCount'=>$paginationCount,
                 'pageCount'=>ceil($paginationCount/$paginationConfig['per_page']),
+				'filter' => json_encode($filter)
 		        );
 	    $layout = array(
 			      'title'=>$this->_title,
@@ -101,6 +116,9 @@ class Category extends CI_Controller {
         if ($_POST) {
             $name = $this->input->post('name', TRUE);
             $parent_id = $this->input->post('parent_id', TRUE);
+			if ($item_info && $parent_id == $item_info['id']) {
+                printAjaxError('fail',"上级分类不能与自身相同！");
+			}
             $fields = array(
                 'name' => $name,
                 'parent_id' => $parent_id,
@@ -108,7 +126,7 @@ class Category extends CI_Controller {
             );
             $ret = $this->tableObject->save($fields, $id ? array('id' => $id) : NULL);
             if ($ret) {
-                printAjaxSuccess($prfUrl);
+                printAjaxSuccess('close_layer','保存成功');
             } else {
                 printAjaxError('fail',"操作失败！");
             }

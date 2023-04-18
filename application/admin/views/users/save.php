@@ -66,7 +66,7 @@
             <input type="hidden" name="path" id="path">
             <div class="layui-upload">
                 <div class="layui-upload-list layui-inline" id="layer-photos">
-                    <img class="layui-upload-img" id="image" lay-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">
+                    <img class="layui-upload-img" id="image" layer-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">
                     <p id="errorText"></p>
                 </div>
                 <button type="button" class="layui-btn layui-inline" id="upload_image">上传图片</button>

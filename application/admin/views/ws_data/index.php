@@ -3,7 +3,7 @@
     <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" method="post" action="admincp.php/<?=$template?>">
+                <form class="layui-form layui-form-pane" method="post" action="admincp.php/<?=$template?>" lay-filter="filterForm">
                     <div class="layui-form-item">
                         <div class="layui-inline">
                             <label class="layui-form-label">关键词</label>
@@ -33,6 +33,7 @@
 
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary" id="reset_search">重置</button>
                         </div>
                     </div>
                 </form>
@@ -67,7 +68,7 @@
 <script id="photos" type="text/html">
     <div class="layui-upload-list layui-inline layer-photos" id="layer-photos">
     {{#  layui.each(d.photos_list, function(index, item){ }}
-        <img class="layui-upload-img" id="image" lay-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 50px;height:50px">
+        <img class="layui-upload-img" layer-src="{{ item.path }}" layer-pid src="{{ item.thumb }}" style="width: 50px;height:50px">
     {{#  }); }}
     </div>
 </script>
@@ -92,6 +93,7 @@
         var table_data = <?=$item_list?>;
         var table_limit = <?=$table_limit?>;
         var menus_list = <?=$menus_list?>;
+        var filter = <?=$filter?>;
 
         
         customSelect.render({
@@ -113,6 +115,7 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 // {field: 'id', width: 80, title: 'ID', sort: true},
+                {field: 'no', minWidth: 120, title: '编号'},
                 {field: 'category', minWidth: 120, title: '物损大类'},
                 {field: 'category_1', width: 120, title: '细分类别1'},
                 {field: 'category_2', width: 120, title: '细分类别2'},
@@ -153,7 +156,7 @@
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '添加会员',
+                    title: '添加数据',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
@@ -174,7 +177,7 @@
                         ids += item.id+',';
                     });
                     ids = ids.substr(0, ids.length - 1);
-                    layer.confirm('真的删除选中会员么?', function(index){
+                    layer.confirm('真的删除选中数据么?', function(index){
 
                         layer.close(index);
                         //向服务端发送删除指令
@@ -240,11 +243,21 @@
             common.asyncDoRequest(url, {'ids': obj.value, 'display': status});
             return false;
         });
+        form.val('filterForm', {
+            parent_id: filter.category,
+            parent_menu: filter.category_name,
+            keyword: filter.keyword
+        });
+
 
         layer.photos({
             photos: '.layer-photos'
             ,anim: 5 //0-6的选择，指定弹出图片动画类型
         }); 
+
+        $('#reset_search').click(function() {
+            $('#parent_id').val('');
+        })
 
     });
 </script>

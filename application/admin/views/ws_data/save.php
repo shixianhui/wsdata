@@ -62,6 +62,12 @@
         </div>
     </div>
     <div class="layui-form-item">
+        <label class="layui-form-label">编号</label>
+        <div class="layui-input-block">
+            <input type="text" name="no" placeholder="请输入编号" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
         <label class="layui-form-label">品牌</label>
         <div class="layui-input-block">
             <input type="text" name="brand" placeholder="请输入品牌" value="" class="layui-input">
@@ -116,7 +122,7 @@
             <input type="hidden" name="path" id="path">
             <div class="layui-upload">
                 <div class="layui-upload-list layui-inline" id="layer-photos">
-                    <img class="layui-upload-img" id="image" lay-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">
+                    <img class="layui-upload-img" id="image" layer-src="images/admin/no_pic.png" src="images/admin/no_pic.png" style="width: 100px;">
                     <p id="errorText"></p>
                 </div>
                 <button type="button" class="layui-btn layui-inline" id="upload_image">上传图片</button>
@@ -151,7 +157,7 @@
 </script>
 <script id="photos" type="text/html">
     {{#  layui.each(d.list, function(index, item){ }}
-        <img class="layui-upload-img" id="image" lay-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 100px;height:100px">
+        <img class="layui-upload-img" id="image" layer-src="{{ item.path }}" src="{{ item.thumb }}" style="width: 100px;height:100px">
     {{#  }); }}
 </script>
 <script>
@@ -273,6 +279,7 @@
             'remark': item_info.remark,
             'source': item_info.source,
             'path': item_info.img,
+            'no': item_info.no,
         });
 
         form.on('select(category)', function(data){

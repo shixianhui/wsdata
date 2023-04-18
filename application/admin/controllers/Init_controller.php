@@ -99,7 +99,7 @@ class Init_controller extends CI_Controller {
             );
             $ret = $this->tableObject->save($fields, $id ? array('id' => $id) : NULL);
             if ($ret) {
-                printAjaxSuccess($prfUrl);
+                printAjaxSuccess('close_layer','保存成功');
             } else {
                 printAjaxError('fail',"操作失败！");
             }

@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
+    <link rel="icon" href="images/favicon.ico">
     <link rel="stylesheet" href="js/admin/lib/layui-v2.6.3/css/layui.css" media="all">
     <!--[if lt IE 9]>
     <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
@@ -69,8 +70,10 @@
 <script src="js/admin/lib/jq-module/jquery.particleground.min.js" charset="utf-8"></script>
 <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
 <script>
-    var ip = returnCitySN['cip'];
-    var area = returnCitySN['cname'];
+    // var ip = returnCitySN['cip'];
+    // var area = returnCitySN['cname'];
+    var ip = '';
+    var area = '';
     //    var client = '电脑端';
     //    if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) { //移动端
     //        client = '移动端';
